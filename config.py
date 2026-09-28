@@ -502,7 +502,7 @@ RULES_COLOR = 0xF7931A
 
 # Willkommens-Karte (Bild mit Avatar, Name und "Du bist Mitglied Nr. X") in #willkommen
 WELCOME_CARD_ENABLED = True
-WELCOME_CARD_BACKGROUND = "assets/server-icon.png"   # leer = nur dunkler Verlauf
+WELCOME_CARD_BACKGROUND = "assets/welcome-background.png"   # leer = nur dunkler Verlauf
 
 # Hinweis per DM beim Beitritt (nur bei VERIFICATION_ENABLED). Platzhalter wie bei WELCOME_MESSAGE.
 JOIN_DM_MESSAGE = (
