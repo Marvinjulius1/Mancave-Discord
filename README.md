@@ -16,7 +16,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 
 ### Server-Aufbau & Verifizierung
 - **Rollen:** Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Challenge-Champion › Recruiter › Mitglied › Unverified
-- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
 - Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.

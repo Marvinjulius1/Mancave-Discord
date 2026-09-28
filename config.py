@@ -237,6 +237,15 @@ CATEGORIES = [
         ],
     },
     {
+        "name": "🤖 KI",
+        "access": "members",
+        "channels": [
+            {"name": "chatgpt", "type": "text", "topic": "ChatGPT: Prompts, GPTs, Workflows, Business-Anwendungen."},
+            {"name": "claude-code", "type": "text", "topic": "Claude Code: Coden mit KI, Projekte, Tipps & Workflows."},
+            {"name": "codex", "type": "text", "topic": "OpenAI Codex: KI-Coding-Agent, Erfahrungen & Vergleiche."},
+        ],
+    },
+    {
         "name": "💰 BUSINESS & MONEY",
         "access": "members",
         "channels": [
