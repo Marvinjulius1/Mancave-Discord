@@ -59,6 +59,7 @@ class MancaveBot(commands.Bot):
         self._setup_done = False
 
     async def setup_hook(self):
+        self.add_view(AcceptRulesView())  # Button unter den Regeln funktioniert auch nach Neustarts
         for ext in config.EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -314,6 +315,33 @@ async def setup_channels(guild: discord.Guild, roles: dict[str, discord.Role]):
         await sort_text_channels(guild, category, [c for c in channels if isinstance(c, discord.TextChannel)])
 
     await sort_categories(guild)
+    if config.VERIFICATION_ENABLED:
+        await lock_unmanaged_channels(guild, roles)
+
+
+async def lock_unmanaged_channels(guild: discord.Guild, roles: dict[str, discord.Role]):
+    """Kategorien, die nicht aus der Config kommen (z. B. Discords Standard-"Textkanäle"), sind für
+    Neue ohne Rolle unsichtbar – erst Regeln bestätigen. Mitglieder sehen sie weiter. Nichts wird gelöscht."""
+    managed = {c["name"] for c in config.CATEGORIES} | {config.STATS_CATEGORY}
+    entry = roles[config.ROLE_MEMBER]
+    for category in guild.categories:
+        if category.name in managed:
+            continue
+        for target in [category, *category.channels]:
+            ow = dict(target.overwrites)
+            everyone_ow = ow.get(guild.default_role, discord.PermissionOverwrite())
+            entry_ow = ow.get(entry, discord.PermissionOverwrite())
+            if everyone_ow.view_channel is False and entry_ow.view_channel is True:
+                continue
+            everyone_ow.view_channel = False
+            entry_ow.view_channel = True
+            ow[guild.default_role] = everyone_ow
+            ow[entry] = entry_ow
+            try:
+                await target.edit(overwrites=ow, reason="Mancave-Setup: erst Regeln bestätigen")
+                log.info("Für Neue gesperrt (bis Regeln bestätigt): %s", target.name)
+            except discord.HTTPException as e:
+                log.warning("Konnte %s nicht sperren: %s", target.name, e)
 
 
 async def sort_text_channels(guild: discord.Guild, category: discord.CategoryChannel, wanted: list):
@@ -390,18 +418,21 @@ async def setup_rules_message(guild: discord.Guild):
                 message = msg
                 break
 
+    view = AcceptRulesView() if config.VERIFICATION_ENABLED else None
+    has_button = bool(message and message.components)
     if message is None:
-        message = await channel.send(embed=embed)
+        message = await channel.send(embed=embed, view=view)
         log.info("Regel-Nachricht gepostet.")
-    elif message.embeds[0].to_dict() != embed.to_dict():
-        await message.edit(embed=embed)
+    elif message.embeds[0].to_dict() != embed.to_dict() or has_button != bool(view):
+        await message.edit(embed=embed, view=view)
         log.info("Regel-Nachricht aktualisiert.")
 
-    # ✅-Reaktion sicherstellen
-    if config.VERIFICATION_ENABLED and not any(
-        str(r.emoji) == config.VERIFY_EMOJI and r.me for r in message.reactions
-    ):
-        await message.add_reaction(config.VERIFY_EMOJI)
+    # Alte ✅-Reaktionen entfernen – bestätigt wird jetzt per Button
+    if any(str(r.emoji) == config.VERIFY_EMOJI for r in message.reactions):
+        try:
+            await message.clear_reaction(config.VERIFY_EMOJI)
+        except discord.HTTPException:
+            pass
 
     bot.rules_message_id = message.id
 
@@ -534,10 +565,23 @@ async def on_member_join(member: discord.Member):
         await send_log(member.guild, f"📥 {member.mention} ist beigetreten und ist jetzt **{config.ROLE_MEMBER}**.")
         await send_welcome(member)
         return
-    unverified = get_role(member.guild, config.ROLE_UNVERIFIED)
-    if unverified:
-        await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
-    await send_log(member.guild, f"📥 {member.mention} ist dem Server beigetreten.")
+    # Regeln zuerst: noch keine Rolle -> sieht nur den Regel-Kanal. Hinweis per DM + im Regel-Kanal.
+    values = channel_placeholders(member.guild)
+    values["mention"] = member.mention
+    dm_ok = True
+    try:
+        await member.send(config.JOIN_DM_MESSAGE.format_map(values))
+    except discord.HTTPException:
+        dm_ok = False  # DMs geschlossen
+    rules = get_text_channel(member.guild, config.RULES_CHANNEL)
+    if rules:
+        try:
+            await rules.send(config.JOIN_HINT_MESSAGE.format_map(values), delete_after=config.JOIN_HINT_DELETE_AFTER,
+                             allowed_mentions=discord.AllowedMentions(users=True))
+        except discord.HTTPException:
+            pass
+    await send_log(member.guild, f"📥 {member.mention} ist beigetreten – wartet auf Regel-Bestätigung"
+                                 + ("" if dm_ok else " (DM nicht möglich)") + ".")
 
 
 async def send_welcome(member: discord.Member):
@@ -576,26 +620,53 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     if member is None or member.bot:
         return
 
+    await accept_rules(member)
+
+
+async def accept_rules(member: discord.Member) -> str:
+    """Regeln akzeptiert -> Einstiegsrolle. Gibt "ok", "already" oder "error" zurück."""
     guild = member.guild
-    unverified = get_role(guild, config.ROLE_UNVERIFIED)
     member_role = get_role(guild, config.ROLE_MEMBER)
     if member_role is None:
         log.error("Rolle '%s' fehlt – /setup ausführen.", config.ROLE_MEMBER)
-        return
+        return "error"
     if member_role in member.roles:
-        return  # schon verifiziert
-
+        return "already"
     try:
         await member.add_roles(member_role, reason="Regeln akzeptiert")
+        unverified = get_role(guild, config.ROLE_UNVERIFIED)
         if unverified and unverified in member.roles:
             await member.remove_roles(unverified, reason="Regeln akzeptiert")
-    except discord.Forbidden:
-        await send_log(guild, f"⚠️ Konnte {member.mention} nicht verifizieren – Bot-Rolle zu niedrig?")
-        return
-
-    await send_log(guild, f"✅ {member.mention} hat die Regeln akzeptiert.")
-
+    except discord.HTTPException:
+        await send_log(guild, f"⚠️ Konnte {member.mention} nicht freischalten – Bot-Rolle zu niedrig?")
+        return "error"
+    await send_log(guild, f"✅ {member.mention} hat die Regeln akzeptiert und ist jetzt **{member_role.name}**.")
     await send_welcome(member)
+    return "ok"
+
+
+class AcceptRulesView(discord.ui.View):
+    """Button unter der Regel-Nachricht."""
+
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Regeln akzeptieren", emoji="✅", style=discord.ButtonStyle.success,
+                       custom_id="mancave:accept_rules")
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+        result = await accept_rules(interaction.user)
+        values = channel_placeholders(interaction.guild)
+        if result == "ok":
+            text = (f"🔥 Willkommen, du bist jetzt **{config.ROLE_MEMBER}** – alle Kanäle sind frei!\n\n"
+                    "**Erste Schritte:**\n"
+                    "1️⃣ Stell dich in {ch_vorstellung} vor\n"
+                    "2️⃣ Mach deinen ersten `/checkin` in {ch_daily_checkin}\n"
+                    "3️⃣ Schau in die Business-Bereiche, die dich interessieren 💰").format_map(values)
+        elif result == "already":
+            text = "✅ Du hast die Regeln schon akzeptiert – viel Spaß in der Mancave!"
+        else:
+            text = "⚠️ Da ist was schiefgelaufen. Bitte melde dich bei einem Admin."
+        await interaction.response.send_message(text, ephemeral=True)
 
 
 # --------------------------------------------------------------------------- #

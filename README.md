@@ -19,10 +19,12 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
   - **Team:** Admin › Consigliere (Vize-Admin) › Türsteher (Moderator) – sehen ADMIN-Bereich & Tickets
   - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5)
   - **Auszeichnungen:** Disziplin-Maschine (30 Tage Check-in-Serie) › Challenge-Champion › Recruiter
-  - **Basis:** Grinder – bekommt jeder sofort beim Beitritt
+  - **Basis:** Grinder – bekommt jeder, sobald er die Regeln akzeptiert hat
 - **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 📱 SMMA, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
-- Neues Mitglied → bekommt **sofort `Grinder`** und kann direkt loslegen. Optional: `VERIFICATION_ENABLED = True` in `config.py` → erst `Unverified`, nach ✅ auf die Regeln `Grinder`
+- **Erst Regeln, dann loslegen:** Neue haben zuerst keine Rolle und sehen nur `#regeln-und-zustimmung`. Hinweis per DM und kurze Erwähnung im Regel-Kanal (löscht sich nach 10 Min.). Klick auf **„✅ Regeln akzeptieren“** → sofort `Grinder`, alle Kanäle frei, Willkommensnachricht + „Erste Schritte“.
+  Fremde Kategorien (z. B. Discords Standard-„Textkanäle“) werden für Neue ebenfalls gesperrt, bis sie bestätigt haben.
+  Ohne Bestätigung: `VERIFICATION_ENABLED = False` in `config.py` → Grinder sofort beim Beitritt.
 - **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`: nur lesen + reagieren (Grundrechte kommen über die Rollen). Niemand außer dem Bot hat „Administrator“.
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
 - Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)

@@ -34,10 +34,12 @@ RUN_SETUP_ON_START = True
 # Der Server-Owner und Bots sind davon ausgenommen.
 ASSIGN_UNVERIFIED_TO_EXISTING = True
 
-# Verifizierung per ✅ auf die Regeln?
-#   False -> neue Mitglieder bekommen beim Beitritt SOFORT die Einstiegsrolle (ROLE_MEMBER = Grinder)
-#   True  -> Beitritt = "Unverified", erst nach ✅ auf die Regeln gibt's die Einstiegsrolle
-VERIFICATION_ENABLED = False
+# Müssen neue Mitglieder erst die Regeln bestätigen?
+#   True  -> Neue haben zuerst KEINE Rolle und sehen nur #regeln-und-zustimmung.
+#            Klick auf den Button "Regeln akzeptieren" -> sofort die Einstiegsrolle (Grinder).
+#            Hinweis per DM + kurze Erwähnung im Regel-Kanal.
+#   False -> neue Mitglieder bekommen beim Beitritt sofort die Einstiegsrolle
+VERIFICATION_ENABLED = True
 
 # Soll #regeln-und-zustimmung nach der Verifizierung weiterhin sichtbar sein?
 #   True  -> alle sehen den Kanal (Mitglieder können die Regeln nachlesen)
@@ -57,7 +59,7 @@ ROLE_VICE = "Consigliere"          # Vize-Admin – die rechte Hand vom Admin
 ROLE_MOD = "Türsteher"             # Moderator – sorgt für Ordnung in der Mancave
 # Basis: Einstiegsrolle, die jeder beim Beitritt bekommt
 ROLE_MEMBER = "Grinder"
-ROLE_UNVERIFIED = "Unverified"     # nur bei VERIFICATION_ENABLED = True
+ROLE_UNVERIFIED = "Unverified"     # wird nicht mehr angelegt (Neue haben einfach noch keine Rolle)
 # Auszeichnungen (automatisch vergeben)
 ROLE_STREAK = "Disziplin-Maschine"  # 30 Tage Check-in-Serie
 ROLE_CHAMPION = "Challenge-Champion"
@@ -193,10 +195,7 @@ ROLES = [
     {"name": ROLE_RECRUITER, "color": 0xE91E63, "hoist": False, "member": True},              # Pink
     # ---- Basis ----
     {"name": ROLE_MEMBER, "color": 0x5DADE2, "hoist": True, "member": True},                  # Hellblau
-    {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False},            # Dunkelgrau
 ]
-if not VERIFICATION_ENABLED:
-    ROLES = [r for r in ROLES if r["name"] != ROLE_UNVERIFIED]
 
 TEAM_ROLES = [r["name"] for r in ROLES if r.get("team")]
 
@@ -450,12 +449,23 @@ RULES_DESCRIPTION = (
     "**Konsequenzen:** Verwarnung → Timeout → Kick → Bann. Bei Scam, Hass oder illegalen Inhalten "
     "gibt's direkt den Bann. Es gelten außerdem die Discord-Nutzungsbedingungen.\n\n"
 
-    + (f"✅ Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
-       "und alle Kanäle freizuschalten." if VERIFICATION_ENABLED else
+    + ("👇 **Klick unten auf „Regeln akzeptieren“**, um die Regeln zu bestätigen. Danach bist du "
+       "**Grinder** und alle Kanäle sind freigeschaltet. 💪" if VERIFICATION_ENABLED else
        "✅ Mit deinem Beitritt akzeptierst du diese Regeln. Viel Erfolg beim Grinden! 💪")
 )
 
 RULES_COLOR = 0xF7931A
+
+# Hinweis per DM beim Beitritt (nur bei VERIFICATION_ENABLED). Platzhalter wie bei WELCOME_MESSAGE.
+JOIN_DM_MESSAGE = (
+    "👋 Willkommen in der **Mancave**!\n\n"
+    "Bevor du loslegen kannst, bestätige bitte kurz unsere Regeln:\n"
+    "➡️ Geh in {ch_regeln_und_zustimmung} und klick unten auf **„✅ Regeln akzeptieren“**.\n\n"
+    "Danach bist du **Grinder** und alle Kanäle sind frei. Wir sehen uns drinnen! 💪"
+)
+# Kurzer Hinweis im Regel-Kanal (löscht sich nach JOIN_HINT_DELETE_AFTER Sekunden selbst)
+JOIN_HINT_MESSAGE = "👋 Willkommen {mention}! Lies die Regeln und klick unten auf **„✅ Regeln akzeptieren“**, um alles freizuschalten."
+JOIN_HINT_DELETE_AFTER = 600
 
 # Platzhalter:
 #   {mention}        -> Erwähnung des neuen Mitglieds
