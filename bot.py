@@ -409,16 +409,43 @@ async def setup_rules_message(guild: discord.Guild):
 # Setup: Bestehende Mitglieder
 # --------------------------------------------------------------------------- #
 
+MEMBER_ROLE_NAMES = {spec["name"] for spec in config.ROLES if spec.get("member")}
+
+
+async def ensure_verified(member: discord.Member, reason: str) -> bool:
+    """Wer eine Mitglieds-Rolle hat (z. B. Rang von Hand vergeben), gilt als verifiziert:
+    "Mitglied" dazu, "Unverified" weg. Gibt True zurück, wenn etwas geändert wurde."""
+    guild = member.guild
+    member_role = get_role(guild, config.ROLE_MEMBER)
+    unverified = get_role(guild, config.ROLE_UNVERIFIED)
+    changed = False
+    try:
+        if member_role and member_role not in member.roles:
+            await member.add_roles(member_role, reason=reason)
+            changed = True
+        if unverified and unverified in member.roles:
+            await member.remove_roles(unverified, reason=reason)
+            changed = True
+    except discord.HTTPException as e:
+        log.warning("Konnte %s nicht als verifiziert markieren: %s", member, e)
+    return changed
+
+
 async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.Role]):
-    """Gibt allen Mitgliedern ohne Mitglied/Unverified die Rolle Unverified."""
-    if not config.ASSIGN_UNVERIFIED_TO_EXISTING:
-        return
+    """Gleicht alle Mitglieder ab:
+      - hat eine Mitglieds-Rolle (Rang, Team, Auszeichnung ...) -> "Mitglied" sicherstellen, "Unverified" weg
+      - hat gar keine Rolle -> "Unverified" (muss erst den Regeln zustimmen)"""
     unverified = roles[config.ROLE_UNVERIFIED]
-    member_role = roles[config.ROLE_MEMBER]
     for member in guild.members:
-        if member.bot or member.id == guild.owner_id:
+        if member.bot:
             continue
-        if unverified in member.roles or member_role in member.roles:
+        if any(r.name in MEMBER_ROLE_NAMES for r in member.roles):
+            if await ensure_verified(member, "Mancave-Setup: hat bereits eine Mitglieds-Rolle"):
+                log.info("Als verifiziert markiert: %s", member)
+            continue
+        if not config.ASSIGN_UNVERIFIED_TO_EXISTING or member.id == guild.owner_id:
+            continue
+        if unverified in member.roles:
             continue
         try:
             await member.add_roles(unverified, reason="Mancave-Setup: noch nicht verifiziert")
@@ -490,6 +517,17 @@ async def on_member_join(member: discord.Member):
     if unverified:
         await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
     await send_log(member.guild, f"📥 {member.mention} ist dem Server beigetreten.")
+
+
+@bot.event
+async def on_member_update(before: discord.Member, after: discord.Member):
+    """Rolle von Hand vergeben (z. B. ein Rang) -> automatisch auch "Mitglied", "Unverified" weg."""
+    if after.guild.id != GUILD_ID or after.bot or before.roles == after.roles:
+        return
+    gained = {r.name for r in after.roles} - {r.name for r in before.roles}
+    if gained & (MEMBER_ROLE_NAMES - {config.ROLE_MEMBER}):
+        if await ensure_verified(after, f"Rolle vergeben: {', '.join(sorted(gained))}"):
+            await send_log(after.guild, f"✅ {after.mention} hat {', '.join(sorted(gained))} bekommen → automatisch **{config.ROLE_MEMBER}**.")
 
 
 @bot.event

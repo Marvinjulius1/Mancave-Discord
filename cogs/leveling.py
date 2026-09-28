@@ -144,6 +144,18 @@ class Leveling(commands.Cog):
     async def on_mancave_ready(self, guild: discord.Guild):
         if not self.voice_xp.is_running():
             self.voice_xp.start()
+        await self.sync_ranks(guild)
+
+    async def sync_ranks(self, guild: discord.Guild):
+        """Vergibt fehlende Rang-Rollen passend zum Level (z. B. nach geänderten Level-Grenzen)."""
+        for row in db.fetchall("SELECT user_id, xp FROM users WHERE xp > 0"):
+            member = guild.get_member(row["user_id"])
+            if member is None or member.bot:
+                continue
+            level, _ = level_from_xp(row["xp"])
+            db.execute("UPDATE users SET level = ? WHERE user_id = ?", (level, member.id))
+            if rank_for_level(level):
+                await apply_rank_role(member, level)
 
     @commands.Cog.listener()
     async def on_mancave_message(self, message: discord.Message):
