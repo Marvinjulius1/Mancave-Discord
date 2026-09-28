@@ -107,6 +107,8 @@ python bot.py
 
 Beim ersten Start baut der Bot den kompletten Server auf (dauert ~30 Sekunden). In der Konsole und in `#bot-logs` siehst du, was angelegt wurde.
 
+> 📘 **Kostenlos 24/7 hosten:** Schritt-für-Schritt-Anleitung für Oracle Cloud in [`docs/ORACLE-HOSTING.md`](docs/ORACLE-HOSTING.md) – mit fertigem Installations-Skript (`deploy/install.sh`).
+
 > **Der Bot muss danach weiterlaufen**, damit Verifizierung (✅) und die `Unverified`-Rolle beim Join funktionieren. Für den Dauerbetrieb eignet sich ein kleiner VPS, ein Raspberry Pi oder ein Bot-Hoster. Wenn du nur das Setup willst, kannst du ihn danach auch stoppen – dann klappt die Verifizierung aber nicht.
 
 ### Anpassen
