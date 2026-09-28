@@ -283,6 +283,8 @@ CATEGORIES = [
              "topic": "PRs, Transformationen, geschaffte Ziele – zeig, was du erreicht hast! 🏆"},
             {"name": "gym-musik", "type": "text",
              "topic": "Die besten Workout-Songs & Playlists – was läuft bei dir im Gym? 🎧"},
+            {"name": "gym-produkte", "type": "text", "mode": "readonly",
+             "topic": "Empfohlenes Equipment fürs Training & Home-Gym. Links sind Affiliate-Links (Werbung). 🛒"},
         ],
     },
     {
