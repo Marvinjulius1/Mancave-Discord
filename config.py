@@ -34,6 +34,11 @@ RUN_SETUP_ON_START = True
 # Der Server-Owner und Bots sind davon ausgenommen.
 ASSIGN_UNVERIFIED_TO_EXISTING = True
 
+# Verifizierung per ✅ auf die Regeln?
+#   False -> neue Mitglieder bekommen beim Beitritt SOFORT die Einstiegsrolle (ROLE_MEMBER = Grinder)
+#   True  -> Beitritt = "Unverified", erst nach ✅ auf die Regeln gibt's die Einstiegsrolle
+VERIFICATION_ENABLED = False
+
 # Soll #regeln-und-zustimmung nach der Verifizierung weiterhin sichtbar sein?
 #   True  -> alle sehen den Kanal (Mitglieder können die Regeln nachlesen)
 #   False -> nur Unverified (und Admins) sehen ihn
@@ -50,9 +55,9 @@ VERIFY_EMOJI = "✅"
 ROLE_ADMIN = "Admin"
 ROLE_VICE = "Consigliere"          # Vize-Admin – die rechte Hand vom Admin
 ROLE_MOD = "Türsteher"             # Moderator – sorgt für Ordnung in der Mancave
-# Basis
-ROLE_MEMBER = "Mitglied"
-ROLE_UNVERIFIED = "Unverified"
+# Basis: Einstiegsrolle, die jeder beim Beitritt bekommt
+ROLE_MEMBER = "Grinder"
+ROLE_UNVERIFIED = "Unverified"     # nur bei VERIFICATION_ENABLED = True
 # Auszeichnungen (automatisch vergeben)
 ROLE_STREAK = "Disziplin-Maschine"  # 30 Tage Check-in-Serie
 ROLE_CHAMPION = "Challenge-Champion"
@@ -182,15 +187,16 @@ ROLES = [
     {"name": "Hustler", "color": 0x16A085, "hoist": True, "member": True},                    # Petrol
     {"name": "Niche", "color": 0x1ABC9C, "hoist": True, "member": True},                      # Türkis
     {"name": "Gooner", "color": 0x3498DB, "hoist": True, "member": True},                     # Blau
-    {"name": "Grinder", "color": 0x5DADE2, "hoist": True, "member": True},                    # Hellblau
     # ---- Auszeichnungen (automatisch) ----
     {"name": ROLE_STREAK, "color": 0xFF5733, "hoist": False, "member": True},                 # Feuerrot
     {"name": ROLE_CHAMPION, "color": 0xF1C40F, "hoist": False, "member": True},               # Gelb
     {"name": ROLE_RECRUITER, "color": 0xE91E63, "hoist": False, "member": True},              # Pink
     # ---- Basis ----
-    {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},                 # Grau
+    {"name": ROLE_MEMBER, "color": 0x5DADE2, "hoist": True, "member": True},                  # Hellblau
     {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False},            # Dunkelgrau
 ]
+if not VERIFICATION_ENABLED:
+    ROLES = [r for r in ROLES if r["name"] != ROLE_UNVERIFIED]
 
 TEAM_ROLES = [r["name"] for r in ROLES if r.get("team")]
 
@@ -444,8 +450,9 @@ RULES_DESCRIPTION = (
     "**Konsequenzen:** Verwarnung → Timeout → Kick → Bann. Bei Scam, Hass oder illegalen Inhalten "
     "gibt's direkt den Bann. Es gelten außerdem die Discord-Nutzungsbedingungen.\n\n"
 
-    f"✅ Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
-    "und alle Kanäle freizuschalten."
+    + (f"✅ Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
+       "und alle Kanäle freizuschalten." if VERIFICATION_ENABLED else
+       "✅ Mit deinem Beitritt akzeptierst du diese Regeln. Viel Erfolg beim Grinden! 💪")
 )
 
 RULES_COLOR = 0xF7931A
@@ -514,8 +521,8 @@ XP_CHALLENGE_COMPLETE = 250
 # Rang-Rollen: ab welchem Level welche Rolle automatisch vergeben wird (aufsteigend).
 # Niedrigere Rang-Rollen werden beim Aufstieg entfernt. Manuell vergebene
 # höhere Ränge werden nie weggenommen.
+# (Grinder ist die Einstiegsrolle und bekommt jeder sofort beim Beitritt.)
 LEVEL_ROLES = [
-    (3, "Grinder"),
     (5, "Gooner"),
     (10, "Niche"),
     (15, "Hustler"),

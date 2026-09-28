@@ -168,8 +168,7 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
         # Neu erstellte Rollen landen bei Discord oft alle auf derselben Position. Eine kleine
         # erlaubte Verschiebung lässt Discord alles neu durchnummerieren -> danach ist Platz.
         try:
-            unverified = roles[config.ROLE_UNVERIFIED]
-            await guild.edit_role_positions(positions={unverified: 1}, reason="Mancave-Setup: Positionen normalisieren")
+            await guild.edit_role_positions(positions={ordered[-1]: 1}, reason="Mancave-Setup: Positionen normalisieren")
             fresh = {r.id: r for r in await guild.fetch_roles()}
             bot_top = max(fresh[r.id].position for r in guild.me.roles)
             ordered = [fresh.get(r.id, r) for r in ordered]
@@ -399,7 +398,9 @@ async def setup_rules_message(guild: discord.Guild):
         log.info("Regel-Nachricht aktualisiert.")
 
     # ✅-Reaktion sicherstellen
-    if not any(str(r.emoji) == config.VERIFY_EMOJI and r.me for r in message.reactions):
+    if config.VERIFICATION_ENABLED and not any(
+        str(r.emoji) == config.VERIFY_EMOJI and r.me for r in message.reactions
+    ):
         await message.add_reaction(config.VERIFY_EMOJI)
 
     bot.rules_message_id = message.id
@@ -433,9 +434,11 @@ async def ensure_verified(member: discord.Member, reason: str) -> bool:
 
 async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.Role]):
     """Gleicht alle Mitglieder ab:
-      - hat eine Mitglieds-Rolle (Rang, Team, Auszeichnung ...) -> "Mitglied" sicherstellen, "Unverified" weg
-      - hat gar keine Rolle -> "Unverified" (muss erst den Regeln zustimmen)"""
-    unverified = roles[config.ROLE_UNVERIFIED]
+      - hat eine Mitglieds-Rolle (Rang, Team, Auszeichnung ...) -> Einstiegsrolle sicherstellen, "Unverified" weg
+      - hat gar keine Rolle -> ohne Verifizierung sofort die Einstiegsrolle, sonst "Unverified".
+    """
+    unverified = roles.get(config.ROLE_UNVERIFIED)
+    entry = roles[config.ROLE_MEMBER]
     for member in guild.members:
         if member.bot:
             continue
@@ -443,9 +446,16 @@ async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.
             if await ensure_verified(member, "Mancave-Setup: hat bereits eine Mitglieds-Rolle"):
                 log.info("Als verifiziert markiert: %s", member)
             continue
+        if not config.VERIFICATION_ENABLED:
+            try:
+                await member.add_roles(entry, reason="Mancave-Setup: Einstiegsrolle")
+                log.info("%s vergeben an: %s", entry.name, member)
+            except discord.HTTPException as e:
+                log.warning("Konnte %s nicht %s geben: %s", member, entry.name, e)
+            continue
         if not config.ASSIGN_UNVERIFIED_TO_EXISTING or member.id == guild.owner_id:
             continue
-        if unverified in member.roles:
+        if unverified is None or unverified in member.roles:
             continue
         try:
             await member.add_roles(unverified, reason="Mancave-Setup: noch nicht verifiziert")
@@ -513,15 +523,38 @@ async def on_message(message: discord.Message):
 async def on_member_join(member: discord.Member):
     if member.guild.id != GUILD_ID or member.bot:
         return
+    if not config.VERIFICATION_ENABLED:
+        # Sofort die Einstiegsrolle (Grinder) -> kann direkt loslegen
+        entry = get_role(member.guild, config.ROLE_MEMBER)
+        if entry:
+            try:
+                await member.add_roles(entry, reason="Neues Mitglied")
+            except discord.HTTPException as e:
+                await send_log(member.guild, f"⚠️ Konnte {member.mention} nicht {entry.name} geben: {e}")
+        await send_log(member.guild, f"📥 {member.mention} ist beigetreten und ist jetzt **{config.ROLE_MEMBER}**.")
+        await send_welcome(member)
+        return
     unverified = get_role(member.guild, config.ROLE_UNVERIFIED)
     if unverified:
         await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
     await send_log(member.guild, f"📥 {member.mention} ist dem Server beigetreten.")
 
 
+async def send_welcome(member: discord.Member):
+    """Willkommensnachricht in #willkommen."""
+    welcome = get_text_channel(member.guild, config.WELCOME_CHANNEL)
+    if welcome:
+        values = channel_placeholders(member.guild)
+        values["mention"] = member.mention
+        try:
+            await welcome.send(config.WELCOME_MESSAGE.format_map(values))
+        except discord.HTTPException:
+            pass
+
+
 @bot.event
 async def on_member_update(before: discord.Member, after: discord.Member):
-    """Rolle von Hand vergeben (z. B. ein Rang) -> automatisch auch "Mitglied", "Unverified" weg."""
+    """Rolle von Hand vergeben (z. B. ein Rang) -> automatisch auch die Einstiegsrolle, "Unverified" weg."""
     if after.guild.id != GUILD_ID or after.bot or before.roles == after.roles:
         return
     gained = {r.name for r in after.roles} - {r.name for r in before.roles}
@@ -532,7 +565,9 @@ async def on_member_update(before: discord.Member, after: discord.Member):
 
 @bot.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    """Verifizierung: ✅ auf die Regel-Nachricht -> Mitglied."""
+    """Verifizierung: ✅ auf die Regel-Nachricht -> Einstiegsrolle (nur bei VERIFICATION_ENABLED)."""
+    if not config.VERIFICATION_ENABLED:
+        return
     if payload.guild_id != GUILD_ID or payload.message_id != bot.rules_message_id:
         return
     if str(payload.emoji) != config.VERIFY_EMOJI:
@@ -560,13 +595,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
     await send_log(guild, f"✅ {member.mention} hat die Regeln akzeptiert.")
 
-    # Willkommensnachricht in #willkommen
-    welcome = get_text_channel(guild, config.WELCOME_CHANNEL)
-    if welcome:
-        values = channel_placeholders(guild)
-        values["mention"] = member.mention
-        text = config.WELCOME_MESSAGE.format_map(values)
-        await welcome.send(text)
+    await send_welcome(member)
 
 
 # --------------------------------------------------------------------------- #

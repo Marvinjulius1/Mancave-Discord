@@ -17,13 +17,13 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 ### Server-Aufbau & Verifizierung
 - **Rollen** (von oben nach unten):
   - **Team:** Admin › Consigliere (Vize-Admin) › Türsteher (Moderator) – sehen ADMIN-Bereich & Tickets
-  - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5) › Grinder (3)
+  - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5)
   - **Auszeichnungen:** Disziplin-Maschine (30 Tage Check-in-Serie) › Challenge-Champion › Recruiter
-  - **Basis:** Mitglied › Unverified
+  - **Basis:** Grinder – bekommt jeder sofort beim Beitritt
 - **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 📱 SMMA, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
-- Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
-- **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`/Unverified: nur lesen + ✅ reagieren. Niemand außer dem Bot hat „Administrator“.
+- Neues Mitglied → bekommt **sofort `Grinder`** und kann direkt loslegen. Optional: `VERIFICATION_ENABLED = True` in `config.py` → erst `Unverified`, nach ✅ auf die Regeln `Grinder`
+- **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`: nur lesen + reagieren (Grundrechte kommen über die Rollen). Niemand außer dem Bot hat „Administrator“.
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
 - Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)
 
@@ -31,7 +31,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 
 | Feature | Befehle | Was passiert |
 |---|---|---|
-| **XP & Level** | `/rank`, `/leaderboard`, `/xp-geben` (Admin) | XP für Nachrichten (1×/Min.), Voice-Zeit und Aktionen. Rang-Rollen automatisch: Lvl 3 Grinder → 5 Gooner → 10 Niche → 15 Hustler → 20 Saftler → 30 Skalierer → 40 König Krypto → 50 Mogul → 75 Mancave-Legende. Level-Ups in `#level-ups` |
+| **XP & Level** | `/rank`, `/leaderboard`, `/xp-geben` (Admin) | XP für Nachrichten (1×/Min.), Voice-Zeit und Aktionen. Start als Grinder, Rang-Rollen automatisch: Lvl 5 Gooner → 10 Niche → 15 Hustler → 20 Saftler → 30 Skalierer → 40 König Krypto → 50 Mogul → 75 Mancave-Legende. Level-Ups in `#level-ups` |
 | **Daily Check-in** | `/checkin`, `/streak`, `/streak-leaderboard` | Täglich Körper / Business / Wissen eintragen, Serien mit Bonus-XP bei 7/30/100 Tagen |
 | **Gym-Log** | `/workout`, `/gym-stats`, `/gym-leaderboard` | Trainings eintragen, Wochenstatistik, montags Wochen-Rückblick in `#gym-log` |
 | **Kurse** | `/kurs BTC`, `/kurs AAPL`, `/kurs Apple`, `/marktbericht` (Admin) | Live-Kurse (CoinGecko / Yahoo Finance, ohne API-Key). Täglich 8 Uhr Report in `#krypto` und Mo–Fr in `#aktien` |
@@ -114,7 +114,7 @@ Beim ersten Start baut der Bot den kompletten Server auf (dauert ~30 Sekunden). 
 
 > 📘 **Kostenlos 24/7 hosten:** Schritt-für-Schritt-Anleitung für Oracle Cloud in [`docs/ORACLE-HOSTING.md`](docs/ORACLE-HOSTING.md) – mit fertigem Installations-Skript (`deploy/install.sh`).
 
-> **Der Bot muss danach weiterlaufen**, damit Verifizierung (✅) und die `Unverified`-Rolle beim Join funktionieren. Für den Dauerbetrieb eignet sich ein kleiner VPS, ein Raspberry Pi oder ein Bot-Hoster. Wenn du nur das Setup willst, kannst du ihn danach auch stoppen – dann klappt die Verifizierung aber nicht.
+> **Der Bot muss danach weiterlaufen**, damit neue Mitglieder beim Beitritt ihre Rolle bekommen und XP, News & Co. laufen. Für den Dauerbetrieb eignet sich ein kleiner VPS, ein Raspberry Pi oder ein Bot-Hoster. Wenn du nur das Setup willst, kannst du ihn danach auch stoppen – dann bekommen Neue aber keine Rolle.
 
 ### Anpassen
 
