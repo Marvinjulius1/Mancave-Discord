@@ -15,6 +15,7 @@ Alle Namen, Farben, Kanäle und Texte stehen in config.py.
 Start:  python bot.py
 """
 
+import asyncio
 import hashlib
 import logging
 import os
@@ -29,6 +30,7 @@ load_dotenv()
 import config  # noqa: E402  (erst nach load_dotenv, damit Module die .env sehen)
 import db  # noqa: E402
 from utils import SafeDict, get_role, get_text_channel, send_log  # noqa: E402
+from welcome_card import render_welcome  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # Grundeinrichtung
@@ -584,14 +586,42 @@ async def on_member_join(member: discord.Member):
                                  + ("" if dm_ok else " (DM nicht möglich)") + ".")
 
 
+def member_number(member: discord.Member) -> int:
+    """Mitgliedsnummer = Position nach Beitrittsdatum (ohne Bots)."""
+    joined = member.joined_at
+    humans = [m for m in member.guild.members if not m.bot and m.joined_at]
+    if joined is None:
+        return len(humans)
+    return sum(1 for m in humans if m.joined_at <= joined)
+
+
+async def build_welcome_card(member: discord.Member) -> discord.File | None:
+    try:
+        avatar = await member.display_avatar.replace(size=256, format="png").read()
+    except discord.HTTPException:
+        avatar = None
+    background = os.path.join(os.path.dirname(os.path.abspath(__file__)), config.WELCOME_CARD_BACKGROUND) \
+        if config.WELCOME_CARD_BACKGROUND else None
+    try:
+        # Bild wird in einem Thread gezeichnet, damit der Bot währenddessen nicht blockiert
+        buf = await asyncio.to_thread(render_welcome, avatar, member.display_name, member_number(member),
+                                      config.SERVER_NAME, background)
+    except Exception:
+        log.exception("Willkommens-Karte konnte nicht erstellt werden")
+        return None
+    return discord.File(buf, filename="willkommen.png")
+
+
 async def send_welcome(member: discord.Member):
-    """Willkommensnachricht in #willkommen."""
+    """Willkommensnachricht in #willkommen – mit Willkommens-Karte als Bild."""
     welcome = get_text_channel(member.guild, config.WELCOME_CHANNEL)
     if welcome:
         values = channel_placeholders(member.guild)
         values["mention"] = member.mention
+        card = await build_welcome_card(member) if config.WELCOME_CARD_ENABLED else None
         try:
-            await welcome.send(config.WELCOME_MESSAGE.format_map(values))
+            await welcome.send(config.WELCOME_MESSAGE.format_map(values), file=card or discord.utils.MISSING,
+                               allowed_mentions=discord.AllowedMentions(users=True))
         except discord.HTTPException:
             pass
 
@@ -689,6 +719,20 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
             await interaction.response.send_message(text, ephemeral=True)
     except discord.HTTPException:
         pass
+
+
+@bot.tree.command(name="willkommen-vorschau", description="(Admin) Willkommens-Karte als Vorschau anzeigen",
+                  guild=GUILD_OBJ)
+@app_commands.describe(mitglied="Für wen? (leer = für dich)")
+@app_commands.default_permissions(manage_guild=True)
+@app_commands.guild_only()
+async def welcome_preview(interaction: discord.Interaction, mitglied: discord.Member | None = None):
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    card = await build_welcome_card(mitglied or interaction.user)
+    if card is None:
+        await interaction.followup.send("❌ Karte konnte nicht erstellt werden – siehe Log.", ephemeral=True)
+        return
+    await interaction.followup.send("So sieht die Willkommens-Karte aus:", file=card, ephemeral=True)
 
 
 @bot.tree.command(name="setup", description="Server-Struktur erneut aufbauen/aktualisieren", guild=GUILD_OBJ)

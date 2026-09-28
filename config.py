@@ -387,6 +387,8 @@ CATEGORIES = [
         "name": "Schach",
         "access": "members",
         "channels": [
+            {"name": "schach-partien", "type": "text",
+             "topic": "Hier laufen die Partien: /schach @gegner zum Herausfordern, /zug e4 zum Ziehen. ♟️"},
             {"name": "anfänger", "type": "text",
              "topic": "Schach lernen: Regeln, Eröffnungen, erste Taktiken – keine Frage ist zu einfach. ♟️"},
             {"name": "fortgeschritten", "type": "text",
@@ -480,6 +482,10 @@ RULES_DESCRIPTION = (
 
 RULES_COLOR = 0xF7931A
 
+# Willkommens-Karte (Bild mit Avatar, Name und "Du bist Mitglied Nr. X") in #willkommen
+WELCOME_CARD_ENABLED = True
+WELCOME_CARD_BACKGROUND = "assets/server-icon.png"   # leer = nur dunkler Verlauf
+
 # Hinweis per DM beim Beitritt (nur bei VERIFICATION_ENABLED). Platzhalter wie bei WELCOME_MESSAGE.
 JOIN_DM_MESSAGE = (
     "👋 Willkommen in der **Mancave**!\n\n"
@@ -524,6 +530,7 @@ EXTENSIONS = [
     "cogs.stats",
     "cogs.invites",
     "cogs.coach",
+    "cogs.chess_game",
     "cogs.dashboard",
 ]
 
@@ -622,6 +629,20 @@ NEWS_FEEDS = {
 NEWS_TIMES = [(7, 30), (18, 0)]    # Briefings um diese Uhrzeiten (Stunde, Minute)
 NEWS_ITEMS_PER_BRIEFING = 8        # max. Schlagzeilen pro Kanal und Briefing
 NEWS_MAX_AGE_HOURS = 24            # ältere Meldungen werden ignoriert
+
+# --------------------------------------------------------------------------- #
+# Schach (/schach, /zug …)
+# --------------------------------------------------------------------------- #
+
+# Partien laufen in diesen Kanälen; wer woanders /schach nutzt, spielt im ersten Kanal der Liste
+CHESS_CHANNELS = ["schach-partien", "anfänger", "fortgeschritten"]
+CHESS_START_ELO = 1200
+CHESS_ELO_K = 32                   # wie stark sich eine Partie auf die Elo auswirkt
+CHESS_CHALLENGE_MINUTES = 15       # so lange kann eine Herausforderung angenommen werden
+CHESS_TIMEOUT_HOURS = 48           # wer so lange nicht zieht, verliert
+XP_CHESS_WIN = 150
+XP_CHESS_DRAW = 60
+XP_CHESS_LOSS = 25                 # Teilnahme zählt auch
 
 # --------------------------------------------------------------------------- #
 # Hall of Fame

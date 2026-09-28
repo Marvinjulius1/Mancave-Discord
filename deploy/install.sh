@@ -18,7 +18,7 @@ SERVICE=/etc/systemd/system/mancave-bot.service
 
 echo "==> Installiere Systempakete ..."
 sudo apt-get update -qq
-sudo apt-get install -y -qq python3 python3-venv python3-pip git sqlite3 >/dev/null
+sudo apt-get install -y -qq python3 python3-venv python3-pip git sqlite3 fonts-dejavu-core >/dev/null
 
 echo "==> Richte Python-Umgebung ein ..."
 python3 -m venv "$APP_DIR/.venv"

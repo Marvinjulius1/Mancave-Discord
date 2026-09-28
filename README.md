@@ -38,6 +38,8 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 | **Gym-Log** | `/workout`, `/gym-stats`, `/gym-leaderboard` | Trainings eintragen, Wochenstatistik, montags Wochen-Rückblick in `#gym-log` |
 | **Kurse** | `/kurs BTC`, `/kurs AAPL`, `/kurs Apple`, `/marktbericht` (Admin) | Live-Kurse (CoinGecko / Yahoo Finance, ohne API-Key). Täglich 8 Uhr Report in `#krypto` und Mo–Fr in `#aktien` |
 | **News** | `/news-jetzt` (Admin) | Täglich 7:30 und 18:00 Uhr Schlagzeilen-Briefing in `#politik-news` (Tagesschau), `#börsen-news` (Tagesschau Wirtschaft, n-tv, finanzen.net, MarketWatch) und `#krypto-news` (BTC-Echo, Cointelegraph) – per RSS, ohne API-Key, keine Doppelungen |
+| **Schach** | `/schach [@gegner]`, `/zug`, `/schach-brett`, `/remis`, `/aufgeben`, `/schach-rangliste`, `/schach-stats` | Partien direkt im Chat (in `#schach-partien`): Brett als Bild, Züge in deutscher/englischer Notation (`/zug Sf3`, `/zug e4`, `/zug O-O`), alle Regeln inkl. Matt/Patt/Remis. Elo-Rangliste, XP für Sieg/Remis/Teilnahme, PGN-Datei am Ende. Wer 48 h nicht zieht, verliert |
+| **Willkommens-Karte** | `/willkommen-vorschau` (Admin) | Bild mit Avatar, Name und „Du bist Mitglied Nr. X“ in `#willkommen` |
 | **Hall of Fame** | – | Wins in `#erfolge-feiern` mit 5× 🔥 landen in `#hall-of-fame` (+100 XP) |
 | **Ideen-Voting** | `/idee`, `/ideen-top` | Idee mit 👍/👎 und Diskussions-Thread in `#business-ideen` |
 | **Tageszitat** | `/zitat` | Täglich 7 Uhr Zitat + Impuls des Tages in `#self-improvement` |
