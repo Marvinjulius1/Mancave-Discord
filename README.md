@@ -16,7 +16,8 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 
 ### Server-Aufbau & Verifizierung
 - **Rollen:** Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Challenge-Champion › Recruiter › Mitglied › Unverified
-- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
 - Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
 - Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)
@@ -29,6 +30,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 | **Daily Check-in** | `/checkin`, `/streak`, `/streak-leaderboard` | Täglich Körper / Business / Wissen eintragen, Serien mit Bonus-XP bei 7/30/100 Tagen |
 | **Gym-Log** | `/workout`, `/gym-stats`, `/gym-leaderboard` | Trainings eintragen, Wochenstatistik, montags Wochen-Rückblick in `#gym-log` |
 | **Kurse** | `/kurs BTC`, `/kurs AAPL`, `/kurs Apple`, `/marktbericht` (Admin) | Live-Kurse (CoinGecko / Yahoo Finance, ohne API-Key). Täglich 8 Uhr Report in `#krypto` und Mo–Fr in `#aktien` |
+| **News** | `/news-jetzt` (Admin) | Täglich 7:30 und 18:00 Uhr Schlagzeilen-Briefing in `#politik-news` (Tagesschau), `#börsen-news` (Tagesschau Wirtschaft, n-tv, finanzen.net, MarketWatch) und `#krypto-news` (BTC-Echo, Cointelegraph) – per RSS, ohne API-Key, keine Doppelungen |
 | **Hall of Fame** | – | Wins in `#erfolge-feiern` mit 5× 🔥 landen in `#hall-of-fame` (+100 XP) |
 | **Ideen-Voting** | `/idee`, `/ideen-top` | Idee mit 👍/👎 und Diskussions-Thread in `#business-ideen` |
 | **Tageszitat** | `/zitat` | Täglich 7 Uhr Zitat + Impuls des Tages in `#self-improvement` |
@@ -36,7 +38,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 | **Auto-Mod** | `/warn`, `/warnings`, `/warn-entfernen`, `/timeout`, `/untimeout`, `/clear` | Spam → Timeout, fremde Invites / Massen-Pings / verbotene Wörter löschen, Links erst ab Level 3. Ab 3 Verwarnungen Auto-Timeout |
 | **Tickets** | Button in `#ticket-erstellen`, `/ticket` | Privater Kanal mit dem Team, beim Schließen Protokoll in `#bot-logs` |
 | **Server-Statistik** | `/serverinfo` | „👥 Mitglieder: N“ ganz oben, alle 10 Min. aktualisiert |
-| **Einladungs-Tracking** | `/invites`, `/invite-leaderboard` | Wer wen eingeladen hat; ab 5 aktiven Einladungen Rolle „Recruiter“ |
+| **Einladungs-Tracking** | `/invites`, `/invite-leaderboard` | Wer wen eingeladen hat; automatisch aktualisierte Rangliste in `#invite-ranking`; ab 5 aktiven Einladungen Rolle „Recruiter“ |
 | **KI-Coach** | `/coach` | Claude beantwortet Fragen zu Business, Finanzen, Training, Mindset – kennt auf Wunsch deine Check-ins & Workouts. Braucht `ANTHROPIC_API_KEY` |
 | **Web-Dashboard** | – | `http://<server>:8080` – Leaderboards, Streaks, Gym, Invites, Ideen, Aktivitäts-Diagramm |
 

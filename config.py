@@ -128,6 +128,10 @@ CRYPTO_CHANNEL = "krypto"
 STOCKS_CHANNEL = "aktien"
 IDEAS_CHANNEL = "business-ideen"
 TICKET_CATEGORY = "🎫 TICKETS"
+INVITE_RANKING_CHANNEL = "invite-ranking"
+NEWS_POLITICS_CHANNEL = "politik-news"
+NEWS_MARKETS_CHANNEL = "börsen-news"
+NEWS_CRYPTO_CHANNEL = "krypto-news"
 
 CATEGORIES = [
     {
@@ -161,18 +165,83 @@ CATEGORIES = [
              "topic": "Die größten Wins der Mancave – automatisch ab genug 🔥-Reaktionen."},
             {"name": LEVELUP_CHANNEL, "type": "text", "mode": "readonly",
              "topic": "Level-Ups und neue Ränge. /rank zeigt deinen Fortschritt."},
+            {"name": INVITE_RANKING_CHANNEL, "type": "text", "mode": "readonly",
+             "topic": "Wer hat die meisten Leute in die Mancave geholt? Wird automatisch aktualisiert. 🔗"},
+        ],
+    },
+    {
+        "name": "📰 NEWS",
+        "access": "members",
+        "channels": [
+            {"name": NEWS_POLITICS_CHANNEL, "type": "text", "mode": "readonly",
+             "topic": "Politik-Schlagzeilen – automatisch morgens & abends."},
+            {"name": NEWS_MARKETS_CHANNEL, "type": "text", "mode": "readonly",
+             "topic": "Börse, Wirtschaft & Trading – automatisch morgens & abends. Keine Finanzberatung."},
+            {"name": NEWS_CRYPTO_CHANNEL, "type": "text", "mode": "readonly",
+             "topic": "Krypto-News – automatisch morgens & abends. Keine Finanzberatung."},
+        ],
+    },
+    {
+        "name": "🪙 KRYPTO",
+        "access": "members",
+        "channels": [
+            {"name": CRYPTO_CHANNEL, "type": "text", "topic": "Coins, On-Chain, Projekte. Morgens Krypto-Report. Keine Finanzberatung."},
+            {"name": "krypto-analysen", "type": "text", "topic": "Charts, Research, Tokenomics – mit Begründung, nicht nur Moon-Emojis."},
+            {"name": "wallets-und-sicherheit", "type": "text", "topic": "Wallets, Börsen, Sicherheit. NIEMALS Seed-Phrase oder Private Key teilen!"},
+        ],
+    },
+    {
+        "name": "🐸 MEMECOINS",
+        "access": "members",
+        "channels": [
+            {"name": "memecoins-chat", "type": "text", "topic": "Memecoins, Narrative, Hype. Extrem riskant – nur Spielgeld!"},
+            {"name": "memecoin-calls", "type": "text", "topic": "Calls mit Contract-Adresse & Begründung. Keine Pump-&-Dump-Aufrufe. DYOR."},
+            {"name": "rug-warnungen", "type": "text", "topic": "Scams, Rugpulls, Honeypots melden – schützt die anderen. 🚨"},
+        ],
+    },
+    {
+        "name": "📊 TRADING",
+        "access": "members",
+        "channels": [
+            {"name": "trading", "type": "text", "topic": "Allgemeiner Trading-Talk. Keine Finanzberatung."},
+            {"name": "trade-setups", "type": "text", "topic": "Setups mit Entry, Stop-Loss, Take-Profit und Begründung."},
+            {"name": "trading-journal", "type": "text", "topic": "Deine Trades inkl. Verluste – ehrlich reflektieren, besser werden."},
+            {"name": STOCKS_CHANNEL, "type": "text", "topic": "Aktien, ETFs, Langfrist-Investments. Morgens Börsen-Report (Mo–Fr)."},
+        ],
+    },
+    {
+        "name": "📦 DROPSHIPPING",
+        "access": "members",
+        "channels": [
+            {"name": "dropshipping-chat", "type": "text", "topic": "Shops, Stores, Ads, Erfahrungen."},
+            {"name": "produkt-research", "type": "text", "topic": "Winning Products, Trends, Nischen – mit Zahlen."},
+            {"name": "lieferanten-und-shops", "type": "text", "topic": "Lieferanten, Agenten, Shopify-Apps, Tools."},
+        ],
+    },
+    {
+        "name": "🔗 AFFILIATE MARKETING",
+        "access": "members",
+        "channels": [
+            {"name": "affiliate-marketing", "type": "text", "topic": "Allgemeiner Affiliate-Talk: Strategien, Erfahrungen, Zahlen."},
+            {"name": "affiliate-programme", "type": "text", "topic": "Gute Programme & Provisionen teilen (keine eigenen Referral-Links spammen)."},
+            {"name": "traffic-und-funnels", "type": "text", "topic": "SEO, Social, Paid Ads, Landingpages, E-Mail-Funnels."},
+        ],
+    },
+    {
+        "name": "🛍️ TIKTOK SHOP",
+        "access": "members",
+        "channels": [
+            {"name": "tiktok-shop-chat", "type": "text", "topic": "TikTok Shop, Creator-Affiliate, Seller-Erfahrungen."},
+            {"name": "virale-produkte", "type": "text", "topic": "Produkte, die gerade auf TikTok gehen – mit Link/Video."},
+            {"name": "content-ideen", "type": "text", "topic": "Hooks, Video-Ideen, Skripte, was gerade performt."},
         ],
     },
     {
         "name": "💰 BUSINESS & MONEY",
         "access": "members",
         "channels": [
-            {"name": "krypto", "type": "text", "topic": "Coins, On-Chain, News. Keine Finanzberatung."},
-            {"name": "trading", "type": "text", "topic": "Setups, Charts, Trade-Reviews. Keine Finanzberatung."},
-            {"name": "aktien", "type": "text", "topic": "Aktien, ETFs, Langfrist-Investments."},
-            {"name": "website-bauen", "type": "text", "topic": "Webdesign, Hosting, SEO, No-Code & Code."},
-            {"name": "affiliate-marketing", "type": "text", "topic": "Programme, Traffic, Funnels, Conversions."},
             {"name": IDEAS_CHANNEL, "type": "text", "topic": "Ideen mit /idee pitchen, per 👍/👎 abstimmen, im Thread diskutieren."},
+            {"name": "website-bauen", "type": "text", "topic": "Webdesign, Hosting, SEO, No-Code & Code."},
             {"name": "ressourcen-tools", "type": "text", "topic": "Tools, Kurse, Bücher, Links – das Beste gesammelt."},
         ],
     },
@@ -284,6 +353,7 @@ EXTENSIONS = [
     "cogs.checkin",
     "cogs.fitness",
     "cogs.markets",
+    "cogs.news",
     "cogs.hall_of_fame",
     "cogs.ideas",
     "cogs.daily",
@@ -358,6 +428,30 @@ STOCK_REPORT_SYMBOLS = {
 }
 MARKET_REPORT_TIME = (8, 0)        # Stunde, Minute
 MARKET_REPORT_ENABLED = True       # Aktien-Report nur Mo–Fr, Krypto jeden Tag
+
+# --------------------------------------------------------------------------- #
+# News (RSS-Feeds, kein API-Key nötig)
+# Kanal -> Liste von (Quellenname, Feed-URL). Eigene Feeds einfach ergänzen.
+# --------------------------------------------------------------------------- #
+
+NEWS_FEEDS = {
+    NEWS_POLITICS_CHANNEL: [
+        ("Tagesschau", "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml"),
+    ],
+    NEWS_MARKETS_CHANNEL: [
+        ("Tagesschau Wirtschaft", "https://www.tagesschau.de/wirtschaft/index~rss2.xml"),
+        ("n-tv Wirtschaft", "https://www.n-tv.de/wirtschaft/rss"),
+        ("finanzen.net", "https://www.finanzen.net/rss/news"),
+        ("MarketWatch", "https://feeds.content.dowjones.io/public/rss/mw_topstories"),
+    ],
+    NEWS_CRYPTO_CHANNEL: [
+        ("BTC-Echo", "https://www.btc-echo.de/feed/"),
+        ("Cointelegraph", "https://cointelegraph.com/rss"),
+    ],
+}
+NEWS_TIMES = [(7, 30), (18, 0)]    # Briefings um diese Uhrzeiten (Stunde, Minute)
+NEWS_ITEMS_PER_BRIEFING = 8        # max. Schlagzeilen pro Kanal und Briefing
+NEWS_MAX_AGE_HOURS = 24            # ältere Meldungen werden ignoriert
 
 # --------------------------------------------------------------------------- #
 # Hall of Fame

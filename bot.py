@@ -279,9 +279,48 @@ async def setup_channels(guild: discord.Guild, roles: dict[str, discord.Role]):
             guild, cat_spec["name"], build_overwrites(guild, roles, access, cat_mode),
         )
 
+        channels = []
         for ch_spec in cat_spec["channels"]:
             overwrites = build_overwrites(guild, roles, access, ch_spec.get("mode"))
-            await ensure_channel(guild, category, ch_spec, overwrites)
+            channels.append(await ensure_channel(guild, category, ch_spec, overwrites))
+        await sort_text_channels(guild, category, [c for c in channels if isinstance(c, discord.TextChannel)])
+
+    await sort_categories(guild)
+
+
+async def sort_text_channels(guild: discord.Guild, category: discord.CategoryChannel, wanted: list):
+    """Textkanäle einer Kategorie in der Reihenfolge aus der Config anordnen."""
+    others = [c for c in category.text_channels if c not in wanted]  # z. B. Ticket-Kanäle
+    order = wanted + sorted(others, key=lambda c: c.position)
+    current = sorted(category.text_channels, key=lambda c: (c.position, c.id))
+    if current == order or len(order) < 2:
+        return
+    base = min(c.position for c in order)
+    payload = [{"id": c.id, "position": base + i} for i, c in enumerate(order)]
+    try:
+        await guild._state.http.bulk_channel_update(guild.id, payload, reason="Mancave-Setup")
+    except discord.HTTPException as e:
+        log.warning("Kanäle in %s konnten nicht sortiert werden: %s", category.name, e)
+
+
+async def sort_categories(guild: discord.Guild):
+    """Kategorien in der Reihenfolge aus config.CATEGORIES anordnen (Stats-Kategorie bleibt ganz oben,
+    selbst angelegte Kategorien kommen ans Ende)."""
+    wanted = [discord.utils.get(guild.categories, name=c["name"]) for c in config.CATEGORIES]
+    wanted = [c for c in wanted if c]
+    others = [c for c in guild.categories if c not in wanted]
+    top = [c for c in others if c.name == config.STATS_CATEGORY]
+    order = top + wanted + [c for c in others if c not in top]
+    current = sorted(guild.categories, key=lambda c: (c.position, c.id))
+    if current == order:
+        return
+    payload = [{"id": c.id, "position": i} for i, c in enumerate(order)]
+    try:
+        # Ein einziger API-Aufruf für alle Kategorien statt vieler Einzel-Edits
+        await guild._state.http.bulk_channel_update(guild.id, payload, reason="Mancave-Setup")
+        log.info("Kategorien sortiert.")
+    except discord.HTTPException as e:
+        log.warning("Kategorien konnten nicht sortiert werden: %s", e)
 
 
 # --------------------------------------------------------------------------- #

@@ -68,7 +68,7 @@ class Markets(commands.Cog):
         self.session: aiohttp.ClientSession | None = None
 
     async def cog_load(self):
-        self.session = aiohttp.ClientSession(headers=HEADERS, timeout=aiohttp.ClientTimeout(total=15))
+        self.session = aiohttp.ClientSession(headers=HEADERS, timeout=aiohttp.ClientTimeout(total=15), trust_env=True)
 
     async def cog_unload(self):
         self.daily_report.cancel()
