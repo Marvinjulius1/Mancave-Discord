@@ -157,7 +157,7 @@ ADMIN_PERMISSIONS = VICE_PERMISSIONS | discord.Permissions(  # Admin
 #   name        -> Rollenname
 #   color       -> Farbe als Hex-Zahl
 #   hoist       -> separat in der Mitgliederliste anzeigen
-#   member      -> True = sieht alle normalen Kanäle (wie "Mitglied")
+#   member      -> True = sieht alle normalen Kanäle (wie die Einstiegsrolle Grinder)
 #   team        -> True = sieht den ADMIN-Bereich und Tickets, zählt als Moderator
 #   permissions -> Server-weite Rechte
 #                  (Standard: MEMBER_PERMISSIONS bei member=True, sonst keine)
