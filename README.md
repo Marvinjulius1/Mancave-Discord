@@ -20,7 +20,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
   - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5)
   - **Auszeichnungen:** Disziplin-Maschine (30 Tage Check-in-Serie) › Challenge-Champion › Recruiter
   - **Basis:** Grinder – bekommt jeder, sobald er die Regeln akzeptiert hat
-- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 💪 GYM, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 📱 SMMA, 🤖 KI, 💰 BUSINESS & MONEY, Schach (mit Sprachkanal für „Chess in the Park“), ⛏️ MINECRAFT, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 💪 GYM, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 📱 SMMA, 🤖 KI, 💰 BUSINESS & MONEY, Schach (mit Sprachkanal für „Chess in the Park“), Minecraft Server, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
 - **Erst Regeln, dann loslegen:** Neue haben zuerst keine Rolle und sehen nur `#regeln-und-zustimmung`. Hinweis per DM und kurze Erwähnung im Regel-Kanal (löscht sich nach 10 Min.). Klick auf **„✅ Regeln akzeptieren“** → sofort `Grinder`, alle Kanäle frei, Willkommensnachricht + „Erste Schritte“.
   Fremde Kategorien (z. B. Discords Standard-„Textkanäle“) werden für Neue ebenfalls gesperrt, bis sie bestätigt haben.

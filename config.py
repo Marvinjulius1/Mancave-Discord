@@ -235,6 +235,11 @@ NEWS_POLITICS_CHANNEL = "politik-news"
 NEWS_MARKETS_CHANNEL = "börsen-news"
 NEWS_CRYPTO_CHANNEL = "krypto-news"
 
+# Umbenannte Kategorien: alter Name -> neuer Name (die bestehende Kategorie wird umbenannt, nicht neu angelegt)
+CATEGORY_RENAMES = {
+    "⛏️ MINECRAFT": "Minecraft Server",
+}
+
 CATEGORIES = [
     {
         "name": "📜 START",
@@ -402,7 +407,7 @@ CATEGORIES = [
         ],
     },
     {
-        "name": "⛏️ MINECRAFT",
+        "name": "Minecraft Server",
         "access": "members",
         "channels": [
             {"name": "minecraft-chat", "type": "text",

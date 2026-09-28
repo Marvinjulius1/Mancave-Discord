@@ -300,6 +300,12 @@ async def ensure_channel(guild, category, spec, overwrites):
 
 
 async def setup_channels(guild: discord.Guild, roles: dict[str, discord.Role]):
+    for old, new in config.CATEGORY_RENAMES.items():
+        category = discord.utils.get(guild.categories, name=old)
+        if category and discord.utils.get(guild.categories, name=new) is None:
+            await category.edit(name=new, reason="Mancave-Setup: Kategorie umbenannt")
+            log.info("Kategorie umbenannt: %s -> %s", old, new)
+
     for cat_spec in config.CATEGORIES:
         access = cat_spec.get("access", "members")
         # Die START-Kategorie enthält den Regelkanal – der braucht sichtbare Kategorie,
