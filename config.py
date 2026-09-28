@@ -46,19 +46,32 @@ VERIFY_EMOJI = "✅"
 # hier anzupassen)
 # --------------------------------------------------------------------------- #
 
-ROLE_ADMIN = "Admin / Mod"
+# Team
+ROLE_ADMIN = "Admin"
+ROLE_VICE = "Consigliere"          # Vize-Admin – die rechte Hand vom Admin
+ROLE_MOD = "Türsteher"             # Moderator – sorgt für Ordnung in der Mancave
+# Basis
 ROLE_MEMBER = "Mitglied"
 ROLE_UNVERIFIED = "Unverified"
-ROLE_RECRUITER = "Recruiter"
+# Auszeichnungen (automatisch vergeben)
+ROLE_STREAK = "Disziplin-Maschine"  # 30 Tage Check-in-Serie
 ROLE_CHAMPION = "Challenge-Champion"
+ROLE_RECRUITER = "Recruiter"
+
+# Umbenennungen: alter Name -> neuer Name. Das Setup benennt die bestehende Rolle
+# um (Mitglieder behalten sie), statt eine neue anzulegen.
+ROLE_RENAMES = {
+    "Admin / Mod": ROLE_ADMIN,
+}
 
 # --------------------------------------------------------------------------- #
-# Server-weite Grundrechte
+# Rechte
 #
 # @everyone (= auch Unverified) bekommt nur das Minimum: Regeln lesen und mit ✅
-# reagieren. Alle Mitglieds-Rollen (member=True) bekommen die normalen Rechte
-# unten – so hat jeder verifizierte Nutzer volle Rechte zum Mitmachen, egal
-# welchen Rang er hat. Welche Kanäle jemand sieht, regeln weiterhin die Kategorien.
+# reagieren. Jede Mitglieds-Rolle bekommt mindestens MEMBER_PERMISSIONS – jeder
+# verifizierte Nutzer darf also normal mitmachen. Höhere Ränge bekommen kleine
+# Extras, das Team gestaffelte Moderationsrechte.
+# Welche Kanäle jemand sieht, regeln weiterhin die Kategorien.
 # --------------------------------------------------------------------------- #
 
 EVERYONE_PERMISSIONS = discord.Permissions(
@@ -98,24 +111,38 @@ MEMBER_PERMISSIONS = discord.Permissions(
     create_instant_invite=True,   # nötig fürs Einladen (Invite-Tracking)
 )
 
-# Moderationsrechte für Admin / Mod – bewusst KEIN "Administrator"
-MOD_PERMISSIONS = discord.Permissions(
-    manage_channels=True,
-    manage_roles=True,
+# Rang-Extras (kommen zu MEMBER_PERMISSIONS dazu, jeder höhere Rang hat alle darunter)
+PERKS_SAFTLER = discord.Permissions(create_private_threads=True)          # private Threads
+PERKS_SKALIERER = PERKS_SAFTLER | discord.Permissions(create_events=True)  # Events planen
+PERKS_KOENIG = PERKS_SKALIERER | discord.Permissions(priority_speaker=True, set_voice_channel_status=True)
+
+# Team-Rechte – gestaffelt. Bewusst niemand mit "Administrator".
+MOD_PERMISSIONS = discord.Permissions(          # Türsteher
     manage_messages=True,
     manage_threads=True,
     manage_nicknames=True,
+    moderate_members=True,      # Timeout
+    kick_members=True,
+    view_audit_log=True,
+    mute_members=True,
+    deafen_members=True,
+    move_members=True,
+    priority_speaker=True,
+    create_private_threads=True,
+)
+VICE_PERMISSIONS = MOD_PERMISSIONS | discord.Permissions(   # Consigliere
+    ban_members=True,
+    manage_channels=True,
+    manage_roles=True,          # nur Rollen UNTER der eigenen
     manage_events=True,
     create_events=True,
-    kick_members=True,
-    ban_members=True,
-    moderate_members=True,
-    view_audit_log=True,
     mention_everyone=True,
-    priority_speaker=True,
-    mute_members=True,
-    move_members=True,
-    deafen_members=True,
+    manage_guild=True,          # u. a. für /challenge-erstellen, /news-jetzt, Einladungen verwalten
+)
+ADMIN_PERMISSIONS = VICE_PERMISSIONS | discord.Permissions(  # Admin
+    manage_webhooks=True,
+    manage_expressions=True,
+    create_expressions=True,
 )
 
 # --------------------------------------------------------------------------- #
@@ -126,36 +153,53 @@ MOD_PERMISSIONS = discord.Permissions(
 #   color       -> Farbe als Hex-Zahl
 #   hoist       -> separat in der Mitgliederliste anzeigen
 #   member      -> True = sieht alle normalen Kanäle (wie "Mitglied")
+#   team        -> True = sieht den ADMIN-Bereich und Tickets, zählt als Moderator
 #   permissions -> Server-weite Rechte
 #                  (Standard: MEMBER_PERMISSIONS bei member=True, sonst keine)
+#
+# Ränge (Level) siehe LEVEL_ROLES weiter unten.
 # --------------------------------------------------------------------------- #
 
 ROLES = [
-    {
-        "name": ROLE_ADMIN,
-        "color": 0xE74C3C,  # Rot
-        "hoist": True,
-        "member": True,
-        "permissions": MEMBER_PERMISSIONS | MOD_PERMISSIONS,
-    },
-    {"name": "König Krypto", "color": 0xF7931A, "hoist": True, "member": True},  # Bitcoin-Gold
-    {"name": "Skalierer", "color": 0x9B59B6, "hoist": True, "member": True},     # Lila
-    {"name": "Saftler", "color": 0x2ECC71, "hoist": True, "member": True},       # Grün
-    {"name": "Niche", "color": 0x1ABC9C, "hoist": True, "member": True},         # Türkis
-    {"name": "Gooner", "color": 0x3498DB, "hoist": True, "member": True},        # Blau
-    # Auszeichnungs-Rollen (werden automatisch vergeben)
-    {"name": ROLE_CHAMPION, "color": 0xF1C40F, "hoist": False, "member": True},  # Gelb
-    {"name": ROLE_RECRUITER, "color": 0xE91E63, "hoist": False, "member": True}, # Pink
-    {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},    # Grau
-    {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False},  # Dunkelgrau
+    # ---- Team ----
+    {"name": ROLE_ADMIN, "color": 0xE74C3C, "hoist": True, "member": True, "team": True,       # Rot
+     "permissions": MEMBER_PERMISSIONS | ADMIN_PERMISSIONS},
+    {"name": ROLE_VICE, "color": 0xC0392B, "hoist": True, "member": True, "team": True,        # Dunkelrot
+     "permissions": MEMBER_PERMISSIONS | VICE_PERMISSIONS},
+    {"name": ROLE_MOD, "color": 0xE67E22, "hoist": True, "member": True, "team": True,         # Orange
+     "permissions": MEMBER_PERMISSIONS | MOD_PERMISSIONS},
+    # ---- Ränge (automatisch nach Level) ----
+    {"name": "Mancave-Legende", "color": 0xFFD700, "hoist": True, "member": True,             # Gold
+     "permissions": MEMBER_PERMISSIONS | PERKS_KOENIG},
+    {"name": "Mogul", "color": 0xE5E4E2, "hoist": True, "member": True,                       # Platin
+     "permissions": MEMBER_PERMISSIONS | PERKS_KOENIG},
+    {"name": "König Krypto", "color": 0xF7931A, "hoist": True, "member": True,                # Bitcoin-Orange
+     "permissions": MEMBER_PERMISSIONS | PERKS_KOENIG},
+    {"name": "Skalierer", "color": 0x9B59B6, "hoist": True, "member": True,                   # Lila
+     "permissions": MEMBER_PERMISSIONS | PERKS_SKALIERER},
+    {"name": "Saftler", "color": 0x2ECC71, "hoist": True, "member": True,                     # Grün
+     "permissions": MEMBER_PERMISSIONS | PERKS_SAFTLER},
+    {"name": "Hustler", "color": 0x16A085, "hoist": True, "member": True},                    # Petrol
+    {"name": "Niche", "color": 0x1ABC9C, "hoist": True, "member": True},                      # Türkis
+    {"name": "Gooner", "color": 0x3498DB, "hoist": True, "member": True},                     # Blau
+    {"name": "Grinder", "color": 0x5DADE2, "hoist": True, "member": True},                    # Hellblau
+    # ---- Auszeichnungen (automatisch) ----
+    {"name": ROLE_STREAK, "color": 0xFF5733, "hoist": False, "member": True},                 # Feuerrot
+    {"name": ROLE_CHAMPION, "color": 0xF1C40F, "hoist": False, "member": True},               # Gelb
+    {"name": ROLE_RECRUITER, "color": 0xE91E63, "hoist": False, "member": True},              # Pink
+    # ---- Basis ----
+    {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},                 # Grau
+    {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False},            # Dunkelgrau
 ]
+
+TEAM_ROLES = [r["name"] for r in ROLES if r.get("team")]
 
 # --------------------------------------------------------------------------- #
 # Kategorien & Kanäle
 #
 # Kategorie "access":
 #   "members" -> nur Rollen mit member=True sehen die Kategorie
-#   "admin"   -> nur ROLE_ADMIN sieht die Kategorie
+#   "admin"   -> nur das Team (Admin, Consigliere, Türsteher) sieht die Kategorie
 #
 # Kanal-Felder:
 #   name   -> Kanalname (Textkanäle: klein, mit Bindestrichen)
@@ -433,8 +477,9 @@ EXTENSIONS = [
 # XP & Level
 #
 # Pro Level braucht man 5·L² + 50·L + 100 XP (L = aktuelles Level).
-# Level 5 ≈ 1.150 XP · Level 10 ≈ 4.675 XP · Level 20 ≈ 23.850 XP
-# Level 30 ≈ 67.500 XP · Level 40 ≈ 145.700 XP
+# Level 3 ≈ 475 XP · Level 5 ≈ 1.150 · Level 10 ≈ 4.675 · Level 15 ≈ 11.825
+# Level 20 ≈ 23.850 · Level 30 ≈ 67.500 · Level 40 ≈ 145.700
+# Level 50 ≈ 268.400 · Level 75 ≈ 835.400 XP
 # --------------------------------------------------------------------------- #
 
 XP_PER_MESSAGE = (15, 25)      # zufällig zwischen min und max
@@ -457,12 +502,19 @@ XP_CHALLENGE_COMPLETE = 250
 # Niedrigere Rang-Rollen werden beim Aufstieg entfernt. Manuell vergebene
 # höhere Ränge werden nie weggenommen.
 LEVEL_ROLES = [
+    (3, "Grinder"),
     (5, "Gooner"),
     (10, "Niche"),
+    (15, "Hustler"),
     (20, "Saftler"),
     (30, "Skalierer"),
     (40, "König Krypto"),
+    (50, "Mogul"),
+    (75, "Mancave-Legende"),
 ]
+
+# Rolle für eine lange Check-in-Serie (ROLE_STREAK)
+STREAK_ROLE_DAYS = 30
 
 # --------------------------------------------------------------------------- #
 # Kurse & Markt-Report  (keine API-Keys nötig: CoinGecko + Yahoo Finance)
@@ -540,7 +592,7 @@ WORKOUT_TYPES = ["Kraft", "Cardio", "Kampfsport", "Sport / Spiel", "Mobility / Y
 GYM_WEEKLY_RECAP_TIME = (9, 0)
 
 # --------------------------------------------------------------------------- #
-# Auto-Moderation (Admin / Mod und alle mit "Nachrichten verwalten" sind ausgenommen)
+# Auto-Moderation (das Team und alle mit "Nachrichten verwalten" sind ausgenommen)
 # --------------------------------------------------------------------------- #
 
 AUTOMOD_ENABLED = True

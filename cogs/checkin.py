@@ -13,7 +13,8 @@ from discord.ext import commands
 import config
 import db
 from cogs.leveling import grant_xp
-from utils import best_streak_from_days, get_text_channel, medal, member_name, now, streak_from_days, today_str
+from utils import (best_streak_from_days, get_role, get_text_channel, medal, member_name, now, send_log,
+                   streak_from_days, today_str)
 
 
 def checkin_days(user_id: int) -> list[str]:
@@ -106,6 +107,18 @@ class Checkin(commands.Cog):
                 allowed_mentions=discord.AllowedMentions(users=True),
             )
         await grant_xp(member, xp)
+        if streak >= config.STREAK_ROLE_DAYS:
+            await self.give_streak_role(member, streak)
+
+    async def give_streak_role(self, member: discord.Member, streak: int):
+        role = get_role(member.guild, config.ROLE_STREAK)
+        if role is None or role in member.roles:
+            return
+        try:
+            await member.add_roles(role, reason=f"{streak} Tage Check-in-Serie")
+        except discord.HTTPException:
+            return
+        await send_log(member.guild, f"🔥 {member.mention} ist jetzt **{role.name}** ({streak} Tage Serie).")
 
     @app_commands.command(name="streak", description="Zeigt deine Check-in-Serie")
     @app_commands.describe(mitglied="Wessen Serie? (leer = deine)")

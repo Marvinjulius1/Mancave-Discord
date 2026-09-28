@@ -15,11 +15,15 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 ## Was der Bot macht
 
 ### Server-Aufbau & Verifizierung
-- **Rollen:** Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Challenge-Champion › Recruiter › Mitglied › Unverified
+- **Rollen** (von oben nach unten):
+  - **Team:** Admin › Consigliere (Vize-Admin) › Türsteher (Moderator) – sehen ADMIN-Bereich & Tickets
+  - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5) › Grinder (3)
+  - **Auszeichnungen:** Disziplin-Maschine (30 Tage Check-in-Serie) › Challenge-Champion › Recruiter
+  - **Basis:** Mitglied › Unverified
 - **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
 - Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
-- **Rechte:** Alle Mitglieds-Rollen (Mitglied, Ränge, Auszeichnungen) haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). `@everyone`/Unverified hat nur das Minimum (lesen + ✅ reagieren). Admin / Mod bekommt zusätzlich Moderationsrechte.
+- **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`/Unverified: nur lesen + ✅ reagieren. Niemand außer dem Bot hat „Administrator“.
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
 - Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)
 
@@ -27,7 +31,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 
 | Feature | Befehle | Was passiert |
 |---|---|---|
-| **XP & Level** | `/rank`, `/leaderboard`, `/xp-geben` (Admin) | XP für Nachrichten (1×/Min.), Voice-Zeit und Aktionen. Rang-Rollen automatisch: Lvl 5 Gooner → 10 Niche → 20 Saftler → 30 Skalierer → 40 König Krypto. Level-Ups in `#level-ups` |
+| **XP & Level** | `/rank`, `/leaderboard`, `/xp-geben` (Admin) | XP für Nachrichten (1×/Min.), Voice-Zeit und Aktionen. Rang-Rollen automatisch: Lvl 3 Grinder → 5 Gooner → 10 Niche → 15 Hustler → 20 Saftler → 30 Skalierer → 40 König Krypto → 50 Mogul → 75 Mancave-Legende. Level-Ups in `#level-ups` |
 | **Daily Check-in** | `/checkin`, `/streak`, `/streak-leaderboard` | Täglich Körper / Business / Wissen eintragen, Serien mit Bonus-XP bei 7/30/100 Tagen |
 | **Gym-Log** | `/workout`, `/gym-stats`, `/gym-leaderboard` | Trainings eintragen, Wochenstatistik, montags Wochen-Rückblick in `#gym-log` |
 | **Kurse** | `/kurs BTC`, `/kurs AAPL`, `/kurs Apple`, `/marktbericht` (Admin) | Live-Kurse (CoinGecko / Yahoo Finance, ohne API-Key). Täglich 8 Uhr Report in `#krypto` und Mo–Fr in `#aktien` |

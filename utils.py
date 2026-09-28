@@ -73,7 +73,7 @@ def get_text_channel(guild: discord.Guild, name: str) -> discord.TextChannel | N
 
 def is_mod(member: discord.Member) -> bool:
     perms = member.guild_permissions
-    return perms.administrator or perms.manage_messages or any(r.name == config.ROLE_ADMIN for r in member.roles)
+    return perms.administrator or perms.manage_messages or any(r.name in config.TEAM_ROLES for r in member.roles)
 
 
 async def send_log(guild: discord.Guild, text: str, **kwargs):

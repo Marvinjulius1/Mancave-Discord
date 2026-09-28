@@ -126,6 +126,13 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     """Legt alle Rollen aus config.ROLES an (oder aktualisiert sie) und sortiert sie."""
     roles: dict[str, discord.Role] = {}
 
+    # Umbenennungen zuerst, damit bestehende Rollen (samt Mitgliedern) erhalten bleiben
+    for old, new in config.ROLE_RENAMES.items():
+        role = get_role(guild, old)
+        if role and get_role(guild, new) is None and role < guild.me.top_role:
+            await role.edit(name=new, reason="Mancave-Setup: Rolle umbenannt")
+            log.info("Rolle umbenannt: %s -> %s", old, new)
+
     for spec in config.ROLES:
         name = spec["name"]
         color = discord.Color(spec["color"])
@@ -157,6 +164,17 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     # Alle Rollen müssen UNTER der Bot-Rolle liegen, sonst darf der Bot sie nicht verschieben.
     bot_top = guild.me.top_role.position
     ordered = [roles[spec["name"]] for spec in config.ROLES]
+    if len(ordered) >= bot_top:
+        # Neu erstellte Rollen landen bei Discord oft alle auf derselben Position. Eine kleine
+        # erlaubte Verschiebung lässt Discord alles neu durchnummerieren -> danach ist Platz.
+        try:
+            unverified = roles[config.ROLE_UNVERIFIED]
+            await guild.edit_role_positions(positions={unverified: 1}, reason="Mancave-Setup: Positionen normalisieren")
+            fresh = {r.id: r for r in await guild.fetch_roles()}
+            bot_top = max(fresh[r.id].position for r in guild.me.roles)
+            ordered = [fresh.get(r.id, r) for r in ordered]
+        except discord.HTTPException as e:
+            log.warning("Rollen-Positionen konnten nicht normalisiert werden: %s", e)
     if len(ordered) >= bot_top:
         log.warning(
             "Rollen können nicht sortiert werden: Unter der Bot-Rolle (Position %s) ist nicht genug Platz für "
@@ -191,11 +209,12 @@ def build_overwrites(
     Baut die Kanal-Rechte:
       - @everyone (und damit Unverified) sieht nichts
       - Mitglieds-Rollen sehen "members"-Kanäle
-      - nur Admin sieht "admin"-Kanäle
+      - nur das Team sieht "admin"-Kanäle
       - Regelkanal: für alle sichtbar, aber nur Reaktionen erlaubt
+      - Nur-Lese-Kanäle: das Team darf trotzdem schreiben
     """
     everyone = guild.default_role
-    admin = roles[config.ROLE_ADMIN]
+    team = [roles[name] for name in config.TEAM_ROLES]
     member_roles = [roles[s["name"]] for s in config.ROLES if s.get("member")]
 
     ow: dict = {
@@ -210,12 +229,14 @@ def build_overwrites(
         )
         if not config.RULES_VISIBLE_AFTER_VERIFY:
             ow[roles[config.ROLE_MEMBER]] = discord.PermissionOverwrite(view_channel=False)
-        # Admins sehen ihn immer und dürfen schreiben
-        ow[admin] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+        # Das Team sieht ihn immer und darf schreiben
+        for role in team:
+            ow[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
         return ow
 
     if access == "admin":
-        ow[admin] = discord.PermissionOverwrite(view_channel=True)
+        for role in team:
+            ow[role] = discord.PermissionOverwrite(view_channel=True)
         return ow
 
     # access == "members"
@@ -225,7 +246,8 @@ def build_overwrites(
     if mode == "readonly":
         for role in member_roles:
             ow[role] = discord.PermissionOverwrite(view_channel=True, send_messages=False, add_reactions=True)
-        ow[admin] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+        for role in team:
+            ow[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, add_reactions=True)
 
     return ow
 

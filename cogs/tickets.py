@@ -2,7 +2,7 @@
 Ticket-System.
 
 In #ticket-erstellen steht eine Nachricht mit Button. Klick -> privater Kanal in "🎫 TICKETS",
-den nur das Mitglied und Admin / Mod sehen. "Schließen" speichert ein Protokoll in #bot-logs
+den nur das Mitglied und das Team (Admin, Consigliere, Türsteher) sehen. "Schließen" speichert ein Protokoll in #bot-logs
 und löscht den Kanal. Alternativ: /ticket.
 """
 
@@ -51,16 +51,16 @@ async def open_ticket(interaction: discord.Interaction):
                                                 ephemeral=True)
         return
 
-    admin = get_role(guild, config.ROLE_ADMIN)
+    team = [r for r in (get_role(guild, name) for name in config.TEAM_ROLES) if r]
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
         guild.me: bot_can_manage(),
         member: discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True,
                                             embed_links=True, read_message_history=True),
     }
-    if admin:
-        overwrites[admin] = discord.PermissionOverwrite(view_channel=True, send_messages=True,
-                                                        read_message_history=True, manage_messages=True)
+    for role in team:
+        overwrites[role] = discord.PermissionOverwrite(view_channel=True, send_messages=True,
+                                                       read_message_history=True, manage_messages=True)
     slug = re.sub(r"[^a-z0-9-]", "", member.name.lower()) or str(member.id)
     channel = await category.create_text_channel(
         f"ticket-{slug}"[:90], overwrites=overwrites, topic=f"Ticket von {member} ({member.id})",
@@ -76,7 +76,7 @@ async def open_ticket(interaction: discord.Interaction):
                      "Wenn alles geklärt ist: **Ticket schließen** klicken."),
         color=0x3498DB,
     )
-    ping = f"{member.mention} {admin.mention}" if admin else member.mention
+    ping = " ".join([member.mention] + [r.mention for r in team])
     await channel.send(ping, embed=embed, view=CloseView(),
                        allowed_mentions=discord.AllowedMentions(users=True, roles=True))
     await interaction.response.send_message(f"✅ Dein Ticket: {channel.mention}", ephemeral=True)

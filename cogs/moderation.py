@@ -1,7 +1,7 @@
 """
 Auto-Moderation & Mod-Befehle.
 
-Automatisch (Admin / Mod und alle mit "Nachrichten verwalten" sind ausgenommen):
+Automatisch (das Team und alle mit "Nachrichten verwalten" sind ausgenommen):
   - Spam (zu viele Nachrichten in kurzer Zeit / gleiche Nachricht mehrfach) -> löschen + Timeout
   - Fremde Discord-Einladungen, verbotene Wörter, Massen-Erwähnungen      -> löschen
   - Links erst ab Level config.LINK_MIN_LEVEL (stoppt Spam-Bots)
