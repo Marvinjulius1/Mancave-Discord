@@ -325,6 +325,8 @@ CATEGORIES = [
             {"name": "trade-setups", "type": "text", "topic": "Setups mit Entry, Stop-Loss, Take-Profit und Begründung."},
             {"name": "trading-journal", "type": "text", "topic": "Deine Trades inkl. Verluste – ehrlich reflektieren, besser werden."},
             {"name": STOCKS_CHANNEL, "type": "text", "topic": "Aktien, ETFs, Langfrist-Investments. Morgens Börsen-Report (Mo–Fr)."},
+            {"name": "trading-spiel", "type": "text",
+             "topic": "Trading mit Spielgeld & echten Kursen: /kaufen BTC 500 · /verkaufen · /depot · /trading-rangliste 📈"},
         ],
     },
     {
@@ -397,6 +399,15 @@ CATEGORIES = [
              "topic": "Partie-Analysen, Eröffnungs-Repertoire, Taktik-Puzzles & Turniere. ♞"},
             # Sprachkanal zum Spielen: beitreten -> Aktivitäten (🚀) -> "Chess in the Park"
             {"name": "♟️ Schach spielen", "type": "voice"},
+        ],
+    },
+    {
+        "name": "⛏️ MINECRAFT",
+        "access": "members",
+        "channels": [
+            {"name": "minecraft-chat", "type": "text",
+             "topic": "Server-IP, Builds, Screenshots, Verabredungen zum Zocken. ⛏️"},
+            {"name": "⛏️ Minecraft Voice", "type": "voice"},
         ],
     },
     {
@@ -533,6 +544,8 @@ EXTENSIONS = [
     "cogs.invites",
     "cogs.coach",
     "cogs.chess_game",
+    "cogs.trading_game",
+    "cogs.achievements",
     "cogs.dashboard",
 ]
 
@@ -645,6 +658,19 @@ CHESS_TIMEOUT_HOURS = 48           # wer so lange nicht zieht, verliert
 XP_CHESS_WIN = 150
 XP_CHESS_DRAW = 60
 XP_CHESS_LOSS = 25                 # Teilnahme zählt auch
+
+# --------------------------------------------------------------------------- #
+# Trading-Spiel (Spielgeld, echte Kurse)
+# --------------------------------------------------------------------------- #
+
+TRADING_START_CASH = 10_000         # € Startkapital
+TRADING_RESET_COOLDOWN_DAYS = 7     # Neustart per /trading-reset höchstens so oft
+
+# --------------------------------------------------------------------------- #
+# Abzeichen
+# --------------------------------------------------------------------------- #
+
+XP_ACHIEVEMENT = 50                 # Bonus-XP pro freigeschaltetem Abzeichen
 
 # --------------------------------------------------------------------------- #
 # Hall of Fame

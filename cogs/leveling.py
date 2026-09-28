@@ -76,6 +76,12 @@ async def grant_xp(member: discord.Member, amount: int) -> int:
         new_role = await apply_rank_role(member, new_level)
         if new_level > row["level"]:
             await announce_level_up(member, new_level, new_role)
+    # Abzeichen prüfen (intern gedrosselt, damit nicht jede XP-Vergabe alles neu berechnet)
+    try:
+        from cogs.achievements import check_achievements
+        await check_achievements(member)
+    except ImportError:
+        pass
     return new_level
 
 
