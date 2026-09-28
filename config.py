@@ -154,6 +154,8 @@ CATEGORIES = [
         "channels": [
             {"name": "allgemeiner-chat", "type": "text", "topic": "Alles, was sonst nirgends reinpasst."},
             {"name": SELF_IMPROVEMENT_CHANNEL, "type": "text", "topic": "Gym, Mindset, Routinen, Bücher, Disziplin."},
+            {"name": "buchempfehlungen", "type": "text",
+             "topic": "Bücher, die dich weitergebracht haben: Titel, Autor, wichtigste Erkenntnis. 📚"},
             {"name": CHECKIN_CHANNEL, "type": "text",
              "topic": "Täglich /checkin: Was hast du heute für Körper, Business und Wissen getan? 🔥"},
             {"name": GYM_CHANNEL, "type": "text", "topic": "Trainings mit /workout eintragen. Leaderboard: /gym-leaderboard 💪"},
