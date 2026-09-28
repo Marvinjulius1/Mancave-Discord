@@ -384,6 +384,18 @@ CATEGORIES = [
         ],
     },
     {
+        "name": "Schach",
+        "access": "members",
+        "channels": [
+            {"name": "anfänger", "type": "text",
+             "topic": "Schach lernen: Regeln, Eröffnungen, erste Taktiken – keine Frage ist zu einfach. ♟️"},
+            {"name": "fortgeschritten", "type": "text",
+             "topic": "Partie-Analysen, Eröffnungs-Repertoire, Taktik-Puzzles & Turniere. ♞"},
+            # Sprachkanal zum Spielen: beitreten -> Aktivitäten (🚀) -> "Chess in the Park"
+            {"name": "♟️ Schach spielen", "type": "voice"},
+        ],
+    },
+    {
         "name": "🎙️ VOICE",
         "access": "members",
         "channels": [
