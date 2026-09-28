@@ -20,7 +20,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
   - **Ränge** (automatisch nach Level): Mancave-Legende (75) › Mogul (50) › König Krypto (40) › Skalierer (30) › Saftler (20) › Hustler (15) › Niche (10) › Gooner (5) › Grinder (3)
   - **Auszeichnungen:** Disziplin-Maschine (30 Tage Check-in-Serie) › Challenge-Champion › Recruiter
   - **Basis:** Mitglied › Unverified
-- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 📰 NEWS, 🪙 KRYPTO, 🐸 MEMECOINS, 📊 TRADING, 📦 DROPSHIPPING, 🔗 AFFILIATE MARKETING, 🛍️ TIKTOK SHOP, 📱 SMMA, 🤖 KI, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
 - Kategorien und Kanäle werden in der Reihenfolge aus `config.py` sortiert
 - Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
 - **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`/Unverified: nur lesen + ✅ reagieren. Niemand außer dem Bot hat „Administrator“.

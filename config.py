@@ -336,6 +336,20 @@ CATEGORIES = [
         ],
     },
     {
+        "name": "📱 SMMA",
+        "access": "members",
+        "channels": [
+            {"name": "smma-chat", "type": "text",
+             "topic": "Social Media Marketing Agency: Agentur aufbauen, Angebote, Preise, Erfahrungen."},
+            {"name": "kundenakquise", "type": "text",
+             "topic": "Cold Outreach, Leads, Sales-Calls, Closing – was funktioniert?"},
+            {"name": "website-bauen", "type": "text",
+             "topic": "Website Building für Kunden: Webdesign, Hosting, SEO, No-Code & Code."},
+            {"name": "social-media-ads", "type": "text",
+             "topic": "Meta-, TikTok- & Google-Ads für Kunden: Kampagnen, Creatives, Zahlen."},
+        ],
+    },
+    {
         "name": "🤖 KI",
         "access": "members",
         "channels": [
@@ -349,7 +363,6 @@ CATEGORIES = [
         "access": "members",
         "channels": [
             {"name": IDEAS_CHANNEL, "type": "text", "topic": "Ideen mit /idee pitchen, per 👍/👎 abstimmen, im Thread diskutieren."},
-            {"name": "website-bauen", "type": "text", "topic": "Webdesign, Hosting, SEO, No-Code & Code."},
             {"name": "ressourcen-tools", "type": "text", "topic": "Tools, Kurse, Bücher, Links – das Beste gesammelt."},
         ],
     },
