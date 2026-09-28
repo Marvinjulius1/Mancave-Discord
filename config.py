@@ -53,6 +53,72 @@ ROLE_RECRUITER = "Recruiter"
 ROLE_CHAMPION = "Challenge-Champion"
 
 # --------------------------------------------------------------------------- #
+# Server-weite Grundrechte
+#
+# @everyone (= auch Unverified) bekommt nur das Minimum: Regeln lesen und mit ✅
+# reagieren. Alle Mitglieds-Rollen (member=True) bekommen die normalen Rechte
+# unten – so hat jeder verifizierte Nutzer volle Rechte zum Mitmachen, egal
+# welchen Rang er hat. Welche Kanäle jemand sieht, regeln weiterhin die Kategorien.
+# --------------------------------------------------------------------------- #
+
+EVERYONE_PERMISSIONS = discord.Permissions(
+    view_channel=True,
+    read_message_history=True,
+    add_reactions=True,
+    change_nickname=True,
+)
+
+MEMBER_PERMISSIONS = discord.Permissions(
+    # Text
+    view_channel=True,
+    send_messages=True,
+    send_messages_in_threads=True,
+    create_public_threads=True,
+    embed_links=True,
+    attach_files=True,
+    add_reactions=True,
+    external_emojis=True,
+    external_stickers=True,
+    read_message_history=True,
+    send_voice_messages=True,
+    send_polls=True,
+    use_application_commands=True,
+    use_external_apps=True,
+    # Voice
+    connect=True,
+    speak=True,
+    stream=True,
+    use_voice_activation=True,
+    use_embedded_activities=True,
+    use_soundboard=True,
+    use_external_sounds=True,
+    request_to_speak=True,
+    # Sonstiges
+    change_nickname=True,
+    create_instant_invite=True,   # nötig fürs Einladen (Invite-Tracking)
+)
+
+# Moderationsrechte für Admin / Mod – bewusst KEIN "Administrator"
+MOD_PERMISSIONS = discord.Permissions(
+    manage_channels=True,
+    manage_roles=True,
+    manage_messages=True,
+    manage_threads=True,
+    manage_nicknames=True,
+    manage_events=True,
+    create_events=True,
+    kick_members=True,
+    ban_members=True,
+    moderate_members=True,
+    view_audit_log=True,
+    mention_everyone=True,
+    priority_speaker=True,
+    mute_members=True,
+    move_members=True,
+    deafen_members=True,
+)
+
+# --------------------------------------------------------------------------- #
 # Rollen – von OBEN (höchste) nach UNTEN (niedrigste) sortiert.
 # Diese Reihenfolge wird im Server als Hierarchie gesetzt.
 #
@@ -60,7 +126,8 @@ ROLE_CHAMPION = "Challenge-Champion"
 #   color       -> Farbe als Hex-Zahl
 #   hoist       -> separat in der Mitgliederliste anzeigen
 #   member      -> True = sieht alle normalen Kanäle (wie "Mitglied")
-#   permissions -> Server-weite Rechte (Standard: keine Extra-Rechte)
+#   permissions -> Server-weite Rechte
+#                  (Standard: MEMBER_PERMISSIONS bei member=True, sonst keine)
 # --------------------------------------------------------------------------- #
 
 ROLES = [
@@ -69,21 +136,7 @@ ROLES = [
         "color": 0xE74C3C,  # Rot
         "hoist": True,
         "member": True,
-        # Moderationsrechte, aber bewusst KEIN "Administrator"
-        "permissions": discord.Permissions(
-            manage_channels=True,
-            manage_roles=True,
-            manage_messages=True,
-            manage_nicknames=True,
-            kick_members=True,
-            ban_members=True,
-            moderate_members=True,
-            view_audit_log=True,
-            mention_everyone=True,
-            mute_members=True,
-            move_members=True,
-            deafen_members=True,
-        ),
+        "permissions": MEMBER_PERMISSIONS | MOD_PERMISSIONS,
     },
     {"name": "König Krypto", "color": 0xF7931A, "hoist": True, "member": True},  # Bitcoin-Gold
     {"name": "Skalierer", "color": 0x9B59B6, "hoist": True, "member": True},     # Lila

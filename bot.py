@@ -130,7 +130,8 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
         name = spec["name"]
         color = discord.Color(spec["color"])
         hoist = spec.get("hoist", False)
-        perms = spec.get("permissions", discord.Permissions.none())
+        default = config.MEMBER_PERMISSIONS if spec.get("member") else discord.Permissions.none()
+        perms = spec.get("permissions", default)
 
         role = get_role(guild, name)
         if role is None:
@@ -145,6 +146,12 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
             await role.edit(colour=color, hoist=hoist, permissions=perms, reason="Mancave-Setup")
             log.info("Rolle aktualisiert: %s", name)
         roles[name] = role
+
+    # @everyone (und damit Unverified) nur Grundrechte
+    everyone = guild.default_role
+    if everyone.permissions != config.EVERYONE_PERMISSIONS:
+        await everyone.edit(permissions=config.EVERYONE_PERMISSIONS, reason="Mancave-Setup")
+        log.info("Rechte von @everyone angepasst.")
 
     # Hierarchie setzen: erste Rolle in der Liste = höchste Position.
     # Alle Rollen müssen UNTER der Bot-Rolle liegen, sonst darf der Bot sie nicht verschieben.
