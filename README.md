@@ -2,27 +2,43 @@
 
 Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifizierung.
 
-| Datei | Inhalt |
+| Datei / Ordner | Inhalt |
 |---|---|
-| `bot.py` | Setup-Logik, Verifizierung, `/setup`-Befehl |
-| `config.py` | **Alles zum Anpassen:** Rollen, Farben, Kategorien, Kanäle, Regel-Text, Willkommensnachricht |
-| `.env` | Bot-Token + Server-ID (nicht committen!) |
+| `bot.py` | Server-Setup, Verifizierung, `/setup`, lädt alle Module |
+| `config.py` | **Alles zum Anpassen:** Rollen, Kanäle, Texte, XP-Werte, Ränge, Uhrzeiten, Auto-Mod, Coach … |
+| `cogs/` | Die Features als einzelne Module (in `config.EXTENSIONS` an-/abschaltbar) |
+| `quotes.py` | Zitate & Tages-Impulse für `#self-improvement` |
+| `dashboard/` | Web-Dashboard |
+| `data/mancave.db` | SQLite-Datenbank (XP, Streaks, Workouts …) – wird automatisch angelegt, nicht committen |
+| `.env` | Bot-Token, Server-ID, optionale Keys (nicht committen!) |
 
 ## Was der Bot macht
 
-- **Rollen** (von oben nach unten): Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Mitglied › Unverified
-- **Kategorien & Kanäle:** 📜 START, 💬 COMMUNITY, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN
-- **Verifizierung:**
-  - Neues Mitglied → bekommt automatisch `Unverified` und sieht nur `#regeln-und-zustimmung`
-  - Reaktion mit ✅ auf die Regeln → `Unverified` wird entfernt, `Mitglied` wird vergeben → alle Kanäle sichtbar
-  - Willkommensnachricht in `#willkommen`, Log in `#bot-logs`
-- **Idempotent:** Beim erneuten Ausführen wird nichts doppelt angelegt, nur Abweichungen (Farben, Rechte, Themen, Regeltext) werden angepasst.
-- `/setup` (nur Admins): Setup jederzeit erneut ausführen, z. B. nachdem du `config.py` geändert hast.
+### Server-Aufbau & Verifizierung
+- **Rollen:** Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Challenge-Champion › Recruiter › Mitglied › Unverified
+- **Kategorien:** 📊 SERVER-STATS, 📜 START, 💬 COMMUNITY, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN, 🎫 TICKETS
+- Neues Mitglied → `Unverified`, sieht nur die Regeln → ✅ drücken → `Mitglied`, alles frei
+- **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
+- Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)
 
-Die Rang-Rollen (König Krypto, Skalierer, Saftler, Niche, Gooner) vergibst du manuell
-(Rechtsklick auf Mitglied › Rollen). Admin / Mod bekommt Moderationsrechte, aber bewusst **nicht** „Administrator“.
+### Features & Befehle
 
----
+| Feature | Befehle | Was passiert |
+|---|---|---|
+| **XP & Level** | `/rank`, `/leaderboard`, `/xp-geben` (Admin) | XP für Nachrichten (1×/Min.), Voice-Zeit und Aktionen. Rang-Rollen automatisch: Lvl 5 Gooner → 10 Niche → 20 Saftler → 30 Skalierer → 40 König Krypto. Level-Ups in `#level-ups` |
+| **Daily Check-in** | `/checkin`, `/streak`, `/streak-leaderboard` | Täglich Körper / Business / Wissen eintragen, Serien mit Bonus-XP bei 7/30/100 Tagen |
+| **Gym-Log** | `/workout`, `/gym-stats`, `/gym-leaderboard` | Trainings eintragen, Wochenstatistik, montags Wochen-Rückblick in `#gym-log` |
+| **Kurse** | `/kurs BTC`, `/kurs AAPL`, `/kurs Apple`, `/marktbericht` (Admin) | Live-Kurse (CoinGecko / Yahoo Finance, ohne API-Key). Täglich 8 Uhr Report in `#krypto` und Mo–Fr in `#aktien` |
+| **Hall of Fame** | – | Wins in `#erfolge-feiern` mit 5× 🔥 landen in `#hall-of-fame` (+100 XP) |
+| **Ideen-Voting** | `/idee`, `/ideen-top` | Idee mit 👍/👎 und Diskussions-Thread in `#business-ideen` |
+| **Tageszitat** | `/zitat` | Täglich 7 Uhr Zitat + Impuls des Tages in `#self-improvement` |
+| **Challenges** | `/challenge-erstellen` (Admin), `/challenge-checkin`, `/challenge-status`, `/challenge-beenden` (Admin) | Mitmachen per Button in `#challenges`; wer jeden Tag abhakt, wird Challenge-Champion |
+| **Auto-Mod** | `/warn`, `/warnings`, `/warn-entfernen`, `/timeout`, `/untimeout`, `/clear` | Spam → Timeout, fremde Invites / Massen-Pings / verbotene Wörter löschen, Links erst ab Level 3. Ab 3 Verwarnungen Auto-Timeout |
+| **Tickets** | Button in `#ticket-erstellen`, `/ticket` | Privater Kanal mit dem Team, beim Schließen Protokoll in `#bot-logs` |
+| **Server-Statistik** | `/serverinfo` | „👥 Mitglieder: N“ ganz oben, alle 10 Min. aktualisiert |
+| **Einladungs-Tracking** | `/invites`, `/invite-leaderboard` | Wer wen eingeladen hat; ab 5 aktiven Einladungen Rolle „Recruiter“ |
+| **KI-Coach** | `/coach` | Claude beantwortet Fragen zu Business, Finanzen, Training, Mindset – kennt auf Wunsch deine Check-ins & Workouts. Braucht `ANTHROPIC_API_KEY` |
+| **Web-Dashboard** | – | `http://<server>:8080` – Leaderboards, Streaks, Gym, Invites, Ideen, Aktivitäts-Diagramm |
 
 ## Anleitung
 
@@ -54,6 +70,8 @@ Oder direkt diesen Link nutzen (`DEINE_CLIENT_ID` durch die *Application ID* von
 https://discord.com/oauth2/authorize?client_id=DEINE_CLIENT_ID&scope=bot+applications.commands&permissions=8
 ```
 
+> **Wichtig:** Der Bot braucht wirklich **Administrator** (oder mindestens *Server verwalten*, *Rollen verwalten*, *Kanäle verwalten*, *Mitglieder moderieren*, *Nachrichten verwalten*). Ohne *Server verwalten* funktionieren Server-Icon und Einladungs-Tracking nicht, ohne *Mitglieder moderieren* keine Timeouts.
+
 > Warum Administrator? Der Bot muss Kanäle anlegen, Rechte setzen (auch in versteckten Kanälen), Rollen sortieren und den Servernamen ändern. Nach dem Setup kannst du ihm die Rechte wieder reduzieren – für die Verifizierung braucht er dann nur noch **Rollen verwalten**, **Kanäle ansehen**, **Nachrichten senden**, **Links einbetten**, **Reaktionen hinzufügen** und **Nachrichtenverlauf lesen**.
 
 **Wichtig danach:** In Discord unter *Servereinstellungen › Rollen* die Rolle des Bots **ganz nach oben** ziehen. Ein Bot kann nur Rollen vergeben/sortieren, die unter seiner eigenen Rolle stehen.
@@ -76,6 +94,8 @@ In `.env` eintragen:
 
 - `DISCORD_TOKEN` – der Token aus Schritt 1
 - `GUILD_ID` – die Server-ID: In Discord *Einstellungen › Erweitert › Entwicklermodus* an, dann Rechtsklick auf den Server → **Server-ID kopieren**
+- optional `ANTHROPIC_API_KEY` – für den KI-Coach (<https://console.anthropic.com>)
+- optional `DASHBOARD_PASSWORD` (+ `DASHBOARD_PORT`) – ohne Passwort ist das Dashboard nur auf dem Rechner selbst erreichbar (`http://127.0.0.1:8080`), mit Passwort von überall (Login-Fenster im Browser, Benutzername egal)
 
 Starten:
 
@@ -93,5 +113,7 @@ Beim ersten Start baut der Bot den kompletten Server auf (dauert ~30 Sekunden). 
 - **Neuer Kanal:** Eintrag in der passenden Kategorie in `CATEGORIES` hinzufügen → `/setup`.
 - **Neue Rolle:** Eintrag in `ROLES` an der gewünschten Stelle der Hierarchie einfügen → `/setup`.
 - **Regelkanal nach Verifizierung ausblenden:** `RULES_VISIBLE_AFTER_VERIFY = False`.
+- **XP-Werte, Level-Grenzen der Ränge, Uhrzeiten, Auto-Mod-Regeln, Coach-Modell:** alles im Abschnitt *FEATURES* in `config.py`.
+- **Feature abschalten:** Zeile in `EXTENSIONS` in `config.py` auskommentieren → Bot neu starten.
 
 ⚠️ Das Skript erkennt Rollen und Kanäle **am Namen**. Wenn du einen Namen in `config.py` änderst, wird etwas Neues angelegt – den alten Eintrag dann in Discord manuell löschen. Das Skript selbst löscht nie etwas.

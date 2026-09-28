@@ -8,24 +8,32 @@ und kümmert sich danach um die Verifizierung:
   - Reaktion ✅ auf die Regeln      -> "Unverified" weg, "Mitglied" dazu
   - /setup (nur Admins)            -> Setup erneut ausführen
 
+Alle weiteren Features (XP, Check-ins, Gym-Log, Kurse, Tickets, ...) liegen als
+Module in cogs/ und werden über config.EXTENSIONS geladen.
+
 Alle Namen, Farben, Kanäle und Texte stehen in config.py.
 Start:  python bot.py
 """
 
+import hashlib
 import logging
 import os
 
 import discord
 from discord import app_commands
+from discord.ext import commands
 from dotenv import load_dotenv
 
-import config
+load_dotenv()
+
+import config  # noqa: E402  (erst nach load_dotenv, damit Module die .env sehen)
+import db  # noqa: E402
+from utils import SafeDict, get_role, get_text_channel, send_log  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # Grundeinrichtung
 # --------------------------------------------------------------------------- #
 
-load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 
@@ -40,19 +48,27 @@ log = logging.getLogger("mancave")
 
 intents = discord.Intents.default()
 intents.members = True          # für on_member_join + Rollen an bestehende Mitglieder
-intents.message_content = True  # für spätere Erweiterungen (z. B. Chat-Befehle)
+intents.message_content = True  # für XP, Auto-Moderation und Spam-Erkennung
 
 
-class MancaveBot(discord.Client):
+class MancaveBot(commands.Bot):
     def __init__(self):
-        super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
+        super().__init__(command_prefix=commands.when_mentioned, intents=intents, help_command=None)
+        self.guild_id = GUILD_ID
         self.rules_message_id: int | None = None  # wird beim Setup gesetzt
         self._setup_done = False
 
     async def setup_hook(self):
+        for ext in config.EXTENSIONS:
+            try:
+                await self.load_extension(ext)
+                log.info("Modul geladen: %s", ext)
+            except Exception:
+                log.exception("Modul %s konnte nicht geladen werden", ext)
         # Slash-Commands nur für unseren Server registrieren (sofort verfügbar)
-        await self.tree.sync(guild=GUILD_OBJ)
+        self.tree.copy_global_to(guild=GUILD_OBJ)
+        synced = await self.tree.sync(guild=GUILD_OBJ)
+        log.info("%s Slash-Commands registriert.", len(synced))
 
 
 bot = MancaveBot()
@@ -61,32 +77,6 @@ bot = MancaveBot()
 # --------------------------------------------------------------------------- #
 # Hilfsfunktionen
 # --------------------------------------------------------------------------- #
-
-def get_role(guild: discord.Guild, name: str) -> discord.Role | None:
-    return discord.utils.get(guild.roles, name=name)
-
-
-def get_text_channel(guild: discord.Guild, name: str) -> discord.TextChannel | None:
-    return discord.utils.get(guild.text_channels, name=name)
-
-
-async def send_log(guild: discord.Guild, text: str):
-    """Schreibt eine Zeile in #bot-logs (falls vorhanden)."""
-    log.info(text)
-    channel = get_text_channel(guild, config.LOG_CHANNEL)
-    if channel:
-        try:
-            await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
-        except discord.HTTPException:
-            pass
-
-
-class SafeDict(dict):
-    """Unbekannte {platzhalter} bleiben einfach stehen statt einen Fehler zu werfen."""
-
-    def __missing__(self, key):
-        return "{" + key + "}"
-
 
 def bot_overwrite() -> discord.PermissionOverwrite:
     """Der Bot selbst darf in jedem Kanal alles Nötige – so sperrt er sich nie aus."""
@@ -112,6 +102,20 @@ async def setup_server_name(guild: discord.Guild):
             log.info("Servername gesetzt: %s", config.SERVER_NAME)
         except discord.Forbidden:
             log.warning("Keine Berechtigung, den Servernamen zu ändern (braucht 'Server verwalten').")
+
+    # Server-Icon nur neu hochladen, wenn sich die Bilddatei geändert hat
+    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), config.SERVER_ICON) if config.SERVER_ICON else None
+    if icon_path and os.path.isfile(icon_path):
+        with open(icon_path, "rb") as f:
+            icon = f.read()
+        digest = hashlib.sha256(icon).hexdigest()
+        if db.kv_get("server_icon_hash") != digest or guild.icon is None:
+            try:
+                await guild.edit(icon=icon, reason="Mancave-Setup: Server-Icon")
+                db.kv_set("server_icon_hash", digest)
+                log.info("Server-Icon gesetzt: %s", config.SERVER_ICON)
+            except discord.HTTPException as e:
+                log.warning("Server-Icon konnte nicht gesetzt werden: %s", e)
 
 
 # --------------------------------------------------------------------------- #
@@ -148,8 +152,10 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     ordered = [roles[spec["name"]] for spec in config.ROLES]
     if len(ordered) >= bot_top:
         log.warning(
-            "Die Bot-Rolle steht zu weit unten (Position %s). Zieh sie in den "
-            "Servereinstellungen > Rollen ganz nach oben und führe /setup erneut aus.", bot_top,
+            "Rollen können nicht sortiert werden: Unter der Bot-Rolle (Position %s) ist nicht genug Platz für "
+            "%s Rollen. In den Servereinstellungen > Rollen die Bot-Rolle ganz nach oben ziehen (auch wenn sie "
+            "schon oben steht – einmal kurz verschieben reicht, dann nummeriert Discord neu) und /setup ausführen.",
+            bot_top, len(ordered),
         )
         return roles
 
@@ -359,6 +365,8 @@ async def run_setup(guild: discord.Guild):
     await setup_existing_members(guild, roles)
     log.info("=== Setup fertig ===")
     await send_log(guild, "✅ Server-Setup abgeschlossen.")
+    # Module (Tickets, Stats, ...) richten jetzt ihre eigenen Nachrichten/Kanäle ein
+    bot.dispatch("mancave_ready", guild)
 
 
 # --------------------------------------------------------------------------- #
@@ -383,6 +391,20 @@ async def on_ready():
     else:
         # Auch ohne Setup muss der Bot wissen, welche Nachricht die Regel-Nachricht ist
         await setup_rules_message(guild)
+        bot.dispatch("mancave_ready", guild)
+
+
+@bot.event
+async def on_message(message: discord.Message):
+    """Zentrale Nachrichten-Verarbeitung: erst Auto-Moderation, dann XP & Co."""
+    if message.guild is None or message.guild.id != GUILD_ID or message.author.bot:
+        return
+    if not isinstance(message.author, discord.Member):
+        return
+    moderation = bot.get_cog("Moderation")
+    if moderation and await moderation.check_message(message):
+        return  # Nachricht wurde gelöscht -> keine XP
+    bot.dispatch("mancave_message", message)
 
 
 @bot.event
@@ -437,6 +459,24 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 # --------------------------------------------------------------------------- #
 # Slash-Commands
 # --------------------------------------------------------------------------- #
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        text = "⛔ Dafür fehlen dir die Rechte."
+    elif isinstance(error, app_commands.CommandOnCooldown):
+        text = f"⏳ Kurz warten – noch {error.retry_after:.0f} Sek."
+    else:
+        log.error("Fehler in /%s", interaction.command.name if interaction.command else "?", exc_info=error)
+        text = "❌ Da ist etwas schiefgelaufen. Die Admins sehen den Fehler im Log."
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(text, ephemeral=True)
+        else:
+            await interaction.response.send_message(text, ephemeral=True)
+    except discord.HTTPException:
+        pass
+
 
 @bot.tree.command(name="setup", description="Server-Struktur erneut aufbauen/aktualisieren", guild=GUILD_OBJ)
 @app_commands.default_permissions(administrator=True)
