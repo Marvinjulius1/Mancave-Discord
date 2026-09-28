@@ -260,7 +260,6 @@ CATEGORIES = [
              "topic": "Bücher, die dich weitergebracht haben: Titel, Autor, wichtigste Erkenntnis. 📚"},
             {"name": CHECKIN_CHANNEL, "type": "text",
              "topic": "Täglich /checkin: Was hast du heute für Körper, Business und Wissen getan? 🔥"},
-            {"name": GYM_CHANNEL, "type": "text", "topic": "Trainings mit /workout eintragen. Leaderboard: /gym-leaderboard 💪"},
             {"name": CHALLENGE_CHANNEL, "type": "text", "mode": "readonly",
              "topic": "Wochen-Challenges: Mitmachen per Button, täglich /challenge-checkin."},
             {"name": "chill-area", "type": "text", "topic": "Abschalten, Memes, Off-Topic."},
@@ -271,6 +270,19 @@ CATEGORIES = [
              "topic": "Level-Ups und neue Ränge. /rank zeigt deinen Fortschritt."},
             {"name": INVITE_RANKING_CHANNEL, "type": "text", "mode": "readonly",
              "topic": "Wer hat die meisten Leute in die Mancave geholt? Wird automatisch aktualisiert. 🔗"},
+        ],
+    },
+    {
+        "name": "💪 GYM",
+        "access": "members",
+        "channels": [
+            {"name": GYM_CHANNEL, "type": "text", "topic": "Trainings mit /workout eintragen. Leaderboard: /gym-leaderboard 💪"},
+            {"name": "gym-videos", "type": "text",
+             "topic": "Trainingsvideos, Technik-Checks, Übungen & Form-Feedback. 🎥"},
+            {"name": "gym-erfolge", "type": "text",
+             "topic": "PRs, Transformationen, geschaffte Ziele – zeig, was du erreicht hast! 🏆"},
+            {"name": "gym-musik", "type": "text",
+             "topic": "Die besten Workout-Songs & Playlists – was läuft bei dir im Gym? 🎧"},
         ],
     },
     {
