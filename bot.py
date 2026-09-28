@@ -288,10 +288,17 @@ async def setup_channels(guild: discord.Guild, roles: dict[str, discord.Role]):
 # Setup: Regel-Nachricht
 # --------------------------------------------------------------------------- #
 
-def build_rules_embed() -> discord.Embed:
+def channel_placeholders(guild: discord.Guild) -> SafeDict:
+    """{ch_kanal_name} -> klickbarer Link zum Textkanal."""
+    values = SafeDict()
+    values.update({f"ch_{c.name.replace('-', '_')}": c.mention for c in guild.text_channels})
+    return values
+
+
+def build_rules_embed(guild: discord.Guild) -> discord.Embed:
     embed = discord.Embed(
         title=config.RULES_TITLE,
-        description=config.RULES_DESCRIPTION,
+        description=config.RULES_DESCRIPTION.format_map(channel_placeholders(guild)),
         color=config.RULES_COLOR,
     )
     embed.set_footer(text=f"{config.SERVER_NAME} • {config.RULES_MESSAGE_MARKER}")
@@ -305,7 +312,7 @@ async def setup_rules_message(guild: discord.Guild):
         log.error("Regelkanal #%s nicht gefunden.", config.RULES_CHANNEL)
         return
 
-    embed = build_rules_embed()
+    embed = build_rules_embed(guild)
     message = None
 
     # Eigene, schon gepostete Regel-Nachricht suchen (am Marker im Footer erkennbar)
@@ -450,8 +457,8 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     # Willkommensnachricht in #willkommen
     welcome = get_text_channel(guild, config.WELCOME_CHANNEL)
     if welcome:
-        values = SafeDict(mention=member.mention)
-        values.update({f"ch_{c.name.replace('-', '_')}": c.mention for c in guild.text_channels})
+        values = channel_placeholders(guild)
+        values["mention"] = member.mention
         text = config.WELCOME_MESSAGE.format_map(values)
         await welcome.send(text)
 

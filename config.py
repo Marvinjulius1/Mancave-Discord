@@ -211,15 +211,50 @@ RULES_MESSAGE_MARKER = "mancave-rules"
 
 RULES_TITLE = "📜 Regeln & Community-Guidelines"
 
+# Platzhalter {ch_<kanalname>} werden zu klickbaren Kanal-Links (wie bei WELCOME_MESSAGE)
 RULES_DESCRIPTION = (
-    "Willkommen in der **Mancave**! Bevor es losgeht, lies dir bitte die Regeln durch.\n\n"
-    "**1.** [PLATZHALTER – Regel 1]\n"
-    "**2.** [PLATZHALTER – Regel 2]\n"
-    "**3.** [PLATZHALTER – Regel 3]\n"
-    "**4.** [PLATZHALTER – Regel 4]\n"
-    "**5.** [PLATZHALTER – Regel 5]\n\n"
-    "⚠️ *Nichts auf diesem Server ist Finanzberatung.*\n\n"
-    f"Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
+    "Willkommen in der **Mancave** – dem Ort für Leute, die jeden Tag besser werden wollen: "
+    "Körper, Business, Wissen. Bevor es losgeht, lies dir die Regeln durch.\n\n"
+
+    "**1. Respekt ist Pflicht** 🤝\n"
+    "Keine Beleidigungen, kein Rassismus, keine Diskriminierung, kein Mobbing. "
+    "Harte Kritik an Ideen ist okay – Angriffe auf Personen nicht.\n\n"
+
+    "**2. Kein Spam & keine Eigenwerbung** 🚫\n"
+    "Keine Werbung, Referral-Links oder Einladungen zu anderen Servern ohne Erlaubnis der Admins. "
+    "Keine Massen-Pings, kein Flooding. Links sind ab Level 3 freigeschaltet.\n\n"
+
+    "**3. Keine Scams & kein Shilling** 🪙\n"
+    "Keine Pump-&-Dump-Aufrufe, keine „garantierten“ Gewinne, keine Fake-Gewinnbeweise, "
+    "keine DMs mit Investment-Angeboten. Wer andere abzocken will, fliegt sofort.\n\n"
+
+    "**4. Keine Finanzberatung** ⚠️\n"
+    "Alles zu Krypto, Trading, Aktien & Co. ist Meinung und Erfahrungsaustausch – keine Anlageberatung. "
+    "Jeder ist für seine eigenen Entscheidungen verantwortlich. Investiere nur, was du verlieren kannst.\n\n"
+
+    "**5. Richtiger Kanal, richtiges Thema** 📂\n"
+    "Poste in den passenden Kanal. Off-Topic gehört in {ch_chill_area}, Wins in {ch_erfolge_feiern}, "
+    "Ideen per `/idee` in {ch_business_ideen}.\n\n"
+
+    "**6. Keine NSFW- oder illegalen Inhalte** 🔞\n"
+    "Keine pornografischen, gewaltverherrlichenden oder illegalen Inhalte – auch nicht als Link oder Meme. "
+    "Keine Anleitungen zu Betrug, Steuerhinterziehung oder Ähnlichem.\n\n"
+
+    "**7. Privatsphäre schützen** 🔒\n"
+    "Keine privaten Daten, Screenshots aus DMs oder Fotos anderer ohne deren Zustimmung.\n\n"
+
+    "**8. Mehrwert liefern** 💪\n"
+    "Hier wird geteilt, nicht nur genommen. Hilf anderen, teile Erfahrungen und Wissen, "
+    "feiere die Wins der anderen mit. Wer nur konsumiert, verpasst das Beste.\n\n"
+
+    "**9. Anweisungen des Teams folgen** 🛡️\n"
+    "Admins & Mods haben das letzte Wort. Probleme oder Fragen? Öffne ein Ticket in {ch_ticket_erstellen} – "
+    "nicht öffentlich diskutieren.\n\n"
+
+    "**Konsequenzen:** Verwarnung → Timeout → Kick → Bann. Bei Scam, Hass oder illegalen Inhalten "
+    "gibt's direkt den Bann. Es gelten außerdem die Discord-Nutzungsbedingungen.\n\n"
+
+    f"✅ Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
     "und alle Kanäle freizuschalten."
 )
 
