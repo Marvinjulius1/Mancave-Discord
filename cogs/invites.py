@@ -14,7 +14,7 @@ from discord.ext import commands, tasks
 
 import config
 import db
-from utils import get_role, get_text_channel, log, medal, member_name, now, send_log
+from utils import get_role, get_text_channel, log, medal, member_name, now, send_log, post_or_update
 
 RANKING_MARKER = "mancave-invite-ranking"
 
@@ -84,15 +84,12 @@ class Invites(commands.Cog):
             return
         embed = self.ranking_embed(guild)
         try:
+            existing = None
             async for msg in channel.history(limit=20):
                 if msg.author == guild.me and msg.embeds and RANKING_MARKER in (msg.embeds[0].footer.text or ""):
-                    old, new = msg.embeds[0].to_dict(), embed.to_dict()
-                    old.pop("timestamp", None)
-                    new.pop("timestamp", None)
-                    if old != new:
-                        await msg.edit(embed=embed)
-                    return
-            await channel.send(embed=embed)
+                    existing = msg
+                    break
+            await post_or_update(channel, existing, embed, banner_key="invites")
         except discord.HTTPException as e:
             log.warning("Invite-Ranking konnte nicht aktualisiert werden: %s", e)
 

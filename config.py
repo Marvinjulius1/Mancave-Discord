@@ -500,6 +500,16 @@ RULES_DESCRIPTION = (
 
 RULES_COLOR = 0xF7931A
 
+# Banner-Grafiken oben in den Bot-Nachrichten (Vorlage: assets/logo-source/banner.html)
+BANNERS = {
+    "rules": "assets/banners/regeln.png",
+    "tickets": "assets/banners/tickets.png",
+    "invites": "assets/banners/invites.png",
+}
+# Server-Banner über der Kanalliste – setzt Discord erst ab Boost-Stufe 2 frei.
+# Der Bot setzt es automatisch, sobald die Stufe erreicht ist.
+SERVER_BANNER = "assets/banners/server.png"
+
 # Willkommens-Karte (Bild mit Avatar, Name und "Du bist Mitglied Nr. X") in #willkommen
 WELCOME_CARD_ENABLED = True
 WELCOME_CARD_BACKGROUND = "assets/welcome-background.png"   # leer = nur dunkler Verlauf

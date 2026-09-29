@@ -114,3 +114,74 @@ def bot_can_manage() -> discord.PermissionOverwrite:
         view_channel=True, send_messages=True, embed_links=True, attach_files=True,
         read_message_history=True, manage_messages=True, manage_channels=True, connect=True,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Banner-Grafiken für Bot-Nachrichten (config.BANNERS)
+# --------------------------------------------------------------------------- #
+
+def _banner_path(key: str) -> str | None:
+    import os
+    rel = config.BANNERS.get(key)
+    if not rel:
+        return None
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), rel)
+    return path if os.path.isfile(path) else None
+
+
+def banner_file(key: str) -> discord.File | None:
+    """Banner als Datei-Anhang (im Embed per attachment://banner.png eingebunden)."""
+    path = _banner_path(key)
+    return discord.File(path, filename="banner.png") if path else None
+
+
+def banner_hash(key: str) -> str:
+    import hashlib
+    path = _banner_path(key)
+    if not path:
+        return ""
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+def embeds_equal(a: discord.Embed, b: discord.Embed) -> bool:
+    """Vergleicht zwei Embeds ohne Bild und Zeitstempel (die ändern sich beim Hochladen)."""
+    da, db_ = a.to_dict(), b.to_dict()
+    for d in (da, db_):
+        d.pop("image", None)
+        d.pop("timestamp", None)
+    return da == db_
+
+
+async def post_or_update(channel: discord.abc.Messageable, existing: discord.Message | None, embed: discord.Embed,
+                         banner_key: str | None = None, view=discord.utils.MISSING,
+                         force: bool = False) -> discord.Message:
+    """Postet eine Bot-Nachricht mit Banner oder aktualisiert die vorhandene – nur wenn sich etwas geändert hat.
+    Das Banner wird nur neu hochgeladen, wenn sich die Bilddatei geändert hat."""
+    import db  # hier importiert, damit utils ohne Datenbank nutzbar bleibt
+
+    file = banner_file(banner_key) if banner_key else None
+    if file:
+        embed.set_image(url="attachment://banner.png")
+    current = banner_hash(banner_key) if banner_key else ""
+
+    if existing is None:
+        kwargs = {"embed": embed}
+        if file:
+            kwargs["file"] = file
+        if view is not discord.utils.MISSING:
+            kwargs["view"] = view
+        message = await channel.send(**kwargs)
+        db.kv_set(f"banner:{message.id}", current)
+        return message
+
+    banner_changed = db.kv_get(f"banner:{existing.id}", "") != current
+    if force or banner_changed or not existing.embeds or not embeds_equal(existing.embeds[0], embed):
+        kwargs = {"embed": embed}
+        if view is not discord.utils.MISSING:
+            kwargs["view"] = view
+        if banner_changed:
+            kwargs["attachments"] = [file] if file else []
+        await existing.edit(**kwargs)
+        db.kv_set(f"banner:{existing.id}", current)
+    return existing

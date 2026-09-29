@@ -28,6 +28,7 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 - **Rechte (gestaffelt):** Alle Mitglieds-Rollen haben die vollen normalen Rechte (`MEMBER_PERMISSIONS`: sehen, schreiben, Threads, Dateien, Reaktionen, Voice, Slash-Commands, Einladen). Extras: ab Saftler private Threads, ab Skalierer Events planen, ab König Krypto Voice-Vorrang. Türsteher: Nachrichten löschen, Timeout, Kick. Consigliere: zusätzlich Bann, Kanäle/Rollen/Server verwalten, @everyone. Admin: zusätzlich Webhooks & Emojis. `@everyone`: nur lesen + reagieren (Grundrechte kommen über die Rollen). Niemand außer dem Bot hat „Administrator“.
 - **Idempotent:** erneutes Ausführen legt nichts doppelt an. `/setup` (Admins) jederzeit.
 - Server-Icon aus `assets/server-icon.png` (wird nur neu hochgeladen, wenn sich die Datei ändert)
+- **Banner:** Grafiken im Mancave-Stil oben in Regeln, Ticket-Panel und Invite-Ranking (`config.BANNERS`, Dateien in `assets/banners/`). Server-Banner (`assets/banners/server.png`) wird automatisch gesetzt, sobald der Server Boost-Stufe 2 erreicht. Vorlage für neue Banner: `assets/logo-source/banner.html`
 
 ### Features & Befehle
 

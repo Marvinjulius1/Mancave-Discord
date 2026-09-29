@@ -29,7 +29,7 @@ load_dotenv()
 
 import config  # noqa: E402  (erst nach load_dotenv, damit Module die .env sehen)
 import db  # noqa: E402
-from utils import SafeDict, get_role, get_text_channel, send_log  # noqa: E402
+from utils import SafeDict, get_role, get_text_channel, post_or_update, send_log  # noqa: E402
 from welcome_card import render_welcome  # noqa: E402
 
 # --------------------------------------------------------------------------- #
@@ -105,6 +105,21 @@ async def setup_server_name(guild: discord.Guild):
             log.info("Servername gesetzt: %s", config.SERVER_NAME)
         except discord.Forbidden:
             log.warning("Keine Berechtigung, den Servernamen zu ändern (braucht 'Server verwalten').")
+
+    # Server-Banner (erst ab Boost-Stufe 2 möglich) – nur neu hochladen, wenn sich die Datei geändert hat
+    banner_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), config.SERVER_BANNER) \
+        if config.SERVER_BANNER else None
+    if banner_path and os.path.isfile(banner_path) and guild.premium_tier >= 2:
+        with open(banner_path, "rb") as f:
+            banner = f.read()
+        digest = hashlib.sha256(banner).hexdigest()
+        if db.kv_get("server_banner_hash") != digest or guild.banner is None:
+            try:
+                await guild.edit(banner=banner, reason="Mancave-Setup: Server-Banner")
+                db.kv_set("server_banner_hash", digest)
+                log.info("Server-Banner gesetzt.")
+            except discord.HTTPException as e:
+                log.warning("Server-Banner konnte nicht gesetzt werden: %s", e)
 
     # Server-Icon nur neu hochladen, wenn sich die Bilddatei geändert hat
     icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), config.SERVER_ICON) if config.SERVER_ICON else None
@@ -428,12 +443,11 @@ async def setup_rules_message(guild: discord.Guild):
 
     view = AcceptRulesView() if config.VERIFICATION_ENABLED else None
     has_button = bool(message and message.components)
-    if message is None:
-        message = await channel.send(embed=embed, view=view)
+    is_new = message is None
+    message = await post_or_update(channel, message, embed, banner_key="rules", view=view,
+                                   force=not is_new and has_button != bool(view))
+    if is_new:
         log.info("Regel-Nachricht gepostet.")
-    elif message.embeds[0].to_dict() != embed.to_dict() or has_button != bool(view):
-        await message.edit(embed=embed, view=view)
-        log.info("Regel-Nachricht aktualisiert.")
 
     # Alte ✅-Reaktionen entfernen – bestätigt wird jetzt per Button
     if any(str(r.emoji) == config.VERIFY_EMOJI for r in message.reactions):

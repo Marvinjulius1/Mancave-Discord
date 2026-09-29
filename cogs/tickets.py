@@ -16,7 +16,7 @@ from discord.ext import commands
 
 import config
 import db
-from utils import bot_can_manage, get_role, get_text_channel, is_mod, log, now, send_log
+from utils import bot_can_manage, get_role, get_text_channel, is_mod, log, now, send_log, post_or_update
 
 OPEN_ID = "mancave:ticket_open"
 CLOSE_ID = "mancave:ticket_close"
@@ -151,13 +151,15 @@ class Tickets(commands.Cog):
         if channel is None:
             return
         embed = panel_embed()
+        existing = None
         async for msg in channel.history(limit=50):
             if msg.author == guild.me and msg.embeds and PANEL_MARKER in (msg.embeds[0].footer.text or ""):
-                if msg.embeds[0].to_dict() != embed.to_dict() or not msg.components:
-                    await msg.edit(embed=embed, view=PanelView())
-                return
-        await channel.send(embed=embed, view=PanelView())
-        log.info("Ticket-Panel gepostet.")
+                existing = msg
+                break
+        await post_or_update(channel, existing, embed, banner_key="tickets", view=PanelView(),
+                             force=existing is not None and not existing.components)
+        if existing is None:
+            log.info("Ticket-Panel gepostet.")
 
     @app_commands.command(name="ticket", description="Privates Ticket an die Admins öffnen")
     @app_commands.guild_only()

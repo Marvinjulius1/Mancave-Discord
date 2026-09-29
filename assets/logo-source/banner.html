@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+  Vorlage für die Mancave-Banner. Rendern z. B. mit Chromium:
+  chrome --headless --window-size=1200,1400 --screenshot=out.png "banner.html?title=REGELN&sub=...&w=1200&h=360"
+  (danach oben auf w×h zuschneiden). Optional: logo=0.95 (Logo-Größe), ts=0.2 (Titel), ss=0.08 (Untertitel)
+-->
+<html><head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: #000; }
+  #b { position: relative; overflow: hidden; font-family: "DejaVu Sans", "Liberation Sans", sans-serif;
+       background: linear-gradient(135deg, #1b1524 0%, #0a0910 60%, #050507 100%); }
+  #grid { position: absolute; inset: 0;
+          background-image: linear-gradient(rgba(166,107,255,.16) 2px, transparent 2px),
+                            linear-gradient(90deg, rgba(166,107,255,.16) 2px, transparent 2px);
+          background-size: 60px 60px; mask-image: linear-gradient(90deg, rgba(0,0,0,.9), rgba(0,0,0,.25)); }
+  #glow { position: absolute; width: 60%; height: 140%; left: -10%; top: -20%;
+          background: radial-gradient(circle, rgba(247,147,26,.28), transparent 65%); }
+  #logo { position: absolute; }
+  #text { position: absolute; color: #f5f5f5; }
+  #label { color: #f7931a; font-weight: bold; letter-spacing: .32em; }
+  #title { font-weight: bold; line-height: 1.02; margin-top: .12em; }
+  #sub { color: #b9b4c6; margin-top: .45em; }
+  #line { position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+          background: linear-gradient(90deg, #c45200, #f7931a, #ffd27a); box-shadow: 0 0 24px #f7931a; }
+</style></head>
+<body>
+<div id="b">
+  <div id="glow"></div><div id="grid"></div>
+  <svg id="logo" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ln" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#c45200"/><stop offset="0.5" stop-color="#f7931a"/><stop offset="1" stop-color="#ffd27a"/>
+      </linearGradient>
+      <filter id="gl" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="16" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <polyline points="250,760 250,400 512,640 700,420" fill="none" stroke="url(#ln)" stroke-width="92"
+              stroke-linejoin="round" stroke-linecap="round" filter="url(#gl)"/>
+    <polyline points="700,420 792,312" fill="none" stroke="#ffd27a" stroke-width="92" stroke-linecap="round" filter="url(#gl)"/>
+    <polygon points="700,250 860,236 846,396" fill="#ffd27a" filter="url(#gl)"/>
+  </svg>
+  <div id="text"><div id="label">MANCAVE</div><div id="title"></div><div id="sub"></div></div>
+  <div id="line"></div>
+</div>
+<script>
+  const p = new URLSearchParams(location.search);
+  const W = +(p.get("w") || 1200), H = +(p.get("h") || 360);
+  const b = document.getElementById("b");
+  b.style.width = W + "px"; b.style.height = H + "px";
+  const logo = document.getElementById("logo"), text = document.getElementById("text");
+  const L = H * +(p.get("logo") || 0.95);           // Logo-Größe relativ zur Höhe
+  logo.style.width = logo.style.height = L + "px";
+  logo.style.left = (H * 0.08) + "px"; logo.style.top = ((H - L) / 2) + "px";
+  text.style.left = (H * 0.08 + L + H * 0.06) + "px";
+  text.style.right = (H * 0.12) + "px";
+  document.getElementById("title").textContent = p.get("title") || "MANCAVE";
+  document.getElementById("sub").textContent = p.get("sub") || "";
+  document.getElementById("label").style.fontSize = (H * 0.075) + "px";
+  document.getElementById("title").style.fontSize = (H * +(p.get("ts") || 0.2)) + "px";   // Titelgröße
+  document.getElementById("sub").style.fontSize = (H * +(p.get("ss") || 0.08)) + "px";     // Untertitel
+  // vertikal zentrieren
+  requestAnimationFrame(() => { text.style.top = ((H - text.offsetHeight) / 2 - H * 0.02) + "px"; });
+</script>
+</body></html>
