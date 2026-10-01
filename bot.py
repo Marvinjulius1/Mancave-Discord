@@ -4,8 +4,8 @@ Mancave Discord-Bot
 Baut den kompletten Server auf (Rollen, Kategorien, Kanäle, Rechte, Regel-Nachricht)
 und kümmert sich danach um die Verifizierung:
 
-  - Neues Mitglied joint           -> bekommt "Unverified"
-  - Reaktion ✅ auf die Regeln      -> "Unverified" weg, "Mitglied" dazu
+  - Neues Mitglied joint           -> bekommt sofort "Grinder" (ohne Verifizierung)
+  - Optional (VERIFICATION_ENABLED): "Unverified", nach ✅ auf die Regeln "Grinder"
   - /setup (nur Admins)            -> Setup erneut ausführen
 
 Alle Namen, Farben, Kanäle und Texte stehen in config.py.
@@ -140,6 +140,15 @@ def active_role_specs() -> list[dict]:
 async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     """Legt alle Rollen aus config.ROLES an (oder aktualisiert sie) und sortiert sie."""
     roles: dict[str, discord.Role] = {}
+
+    # Alte Standardrolle (z. B. "Mitglied") umbenennen statt eine zweite anzulegen
+    if get_role(guild, config.ROLE_MEMBER) is None:
+        for old_name in config.ROLE_MEMBER_OLD_NAMES:
+            old = get_role(guild, old_name)
+            if old and old < guild.me.top_role:
+                await old.edit(name=config.ROLE_MEMBER, reason="Mancave-Setup: Rolle umbenannt")
+                log.info("Rolle umbenannt: %s -> %s", old_name, config.ROLE_MEMBER)
+                break
 
     for spec in active_role_specs():
         name = spec["name"]
@@ -353,8 +362,8 @@ async def setup_rules_message(guild: discord.Guild):
 
 async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.Role]):
     """
-    Verifizierung AUS: Alle bekommen "Mitglied", "Unverified" wird entfernt.
-    Verifizierung AN:  Alle ohne Mitglied/Unverified bekommen "Unverified".
+    Verifizierung AUS: Alle bekommen "Grinder", "Unverified" wird entfernt.
+    Verifizierung AN:  Alle ohne Grinder/Unverified bekommen "Unverified".
     """
     if not config.VERIFICATION_ENABLED:
         member_role = roles[config.ROLE_MEMBER]
@@ -365,7 +374,7 @@ async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.
             try:
                 if member_role not in member.roles:
                     await member.add_roles(member_role, reason="Mancave-Setup")
-                    log.info("Mitglied vergeben an: %s", member)
+                    log.info("Grinder vergeben an: %s", member)
                 if unverified and unverified in member.roles:
                     await member.remove_roles(unverified, reason="Verifizierung deaktiviert")
             except discord.HTTPException as e:
@@ -439,7 +448,7 @@ async def on_member_join(member: discord.Member):
             await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
         return
 
-    # Ohne Verifizierung: direkt Mitglied + Begrüßung
+    # Ohne Verifizierung: sofort Grinder + Begrüßung
     member_role = get_role(member.guild, config.ROLE_MEMBER)
     if member_role:
         await member.add_roles(member_role, reason="Neues Mitglied")
@@ -448,7 +457,7 @@ async def on_member_join(member: discord.Member):
 
 @bot.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    """Verifizierung: ✅ auf die Regel-Nachricht -> Mitglied."""
+    """Verifizierung: ✅ auf die Regel-Nachricht -> Grinder."""
     if not config.VERIFICATION_ENABLED:
         return
     if payload.guild_id != GUILD_ID or payload.message_id != bot.rules_message_id:

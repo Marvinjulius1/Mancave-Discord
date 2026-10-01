@@ -52,7 +52,9 @@ VERIFY_EMOJI = "✅"
 # --------------------------------------------------------------------------- #
 
 ROLE_ADMIN = "Admin / Mod"
-ROLE_MEMBER = "Mitglied"
+ROLE_MEMBER = "Grinder"
+# Frühere Namen der Standardrolle – werden beim Setup automatisch umbenannt
+ROLE_MEMBER_OLD_NAMES = ["Mitglied"]
 ROLE_UNVERIFIED = "Unverified"
 
 # --------------------------------------------------------------------------- #
@@ -62,7 +64,7 @@ ROLE_UNVERIFIED = "Unverified"
 #   name        -> Rollenname
 #   color       -> Farbe als Hex-Zahl
 #   hoist       -> separat in der Mitgliederliste anzeigen
-#   member      -> True = sieht alle normalen Kanäle (wie "Mitglied")
+#   member      -> True = sieht alle normalen Kanäle (wie "Grinder")
 #   verification_only -> Rolle wird nur bei VERIFICATION_ENABLED = True angelegt
 #   permissions -> Server-weite Rechte (Standard: keine Extra-Rechte)
 # --------------------------------------------------------------------------- #
@@ -94,7 +96,7 @@ ROLES = [
     {"name": "Saftler", "color": 0x2ECC71, "hoist": True, "member": True},       # Grün
     {"name": "Niche", "color": 0x1ABC9C, "hoist": True, "member": True},         # Türkis
     {"name": "Gooner", "color": 0x3498DB, "hoist": True, "member": True},        # Blau
-    {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},    # Grau
+    {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},    # Grau – bekommt jeder sofort beim Join
     {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False,
      "verification_only": True},  # Dunkelgrau
 ]
