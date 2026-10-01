@@ -88,6 +88,17 @@ class SafeDict(dict):
         return "{" + key + "}"
 
 
+async def send_welcome(member: discord.Member):
+    """Postet die Willkommensnachricht aus config.py in #willkommen."""
+    guild = member.guild
+    welcome = get_text_channel(guild, config.WELCOME_CHANNEL)
+    if welcome is None:
+        return
+    values = SafeDict(mention=member.mention)
+    values.update({f"ch_{c.name.replace('-', '_')}": c.mention for c in guild.text_channels})
+    await welcome.send(config.WELCOME_MESSAGE.format_map(values))
+
+
 def bot_overwrite() -> discord.PermissionOverwrite:
     """Der Bot selbst darf in jedem Kanal alles Nötige – so sperrt er sich nie aus."""
     return discord.PermissionOverwrite(
@@ -118,11 +129,19 @@ async def setup_server_name(guild: discord.Guild):
 # Setup: Rollen
 # --------------------------------------------------------------------------- #
 
+def active_role_specs() -> list[dict]:
+    """Alle Rollen aus config.ROLES – ohne "Unverified", wenn die Verifizierung aus ist."""
+    return [
+        s for s in config.ROLES
+        if config.VERIFICATION_ENABLED or not s.get("verification_only")
+    ]
+
+
 async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     """Legt alle Rollen aus config.ROLES an (oder aktualisiert sie) und sortiert sie."""
     roles: dict[str, discord.Role] = {}
 
-    for spec in config.ROLES:
+    for spec in active_role_specs():
         name = spec["name"]
         color = discord.Color(spec["color"])
         hoist = spec.get("hoist", False)
@@ -145,7 +164,7 @@ async def setup_roles(guild: discord.Guild) -> dict[str, discord.Role]:
     # Hierarchie setzen: erste Rolle in der Liste = höchste Position.
     # Alle Rollen müssen UNTER der Bot-Rolle liegen, sonst darf der Bot sie nicht verschieben.
     bot_top = guild.me.top_role.position
-    ordered = [roles[spec["name"]] for spec in config.ROLES]
+    ordered = [roles[spec["name"]] for spec in active_role_specs()]
     if len(ordered) >= bot_top:
         log.warning(
             "Die Bot-Rolle steht zu weit unten (Position %s). Zieh sie in den "
@@ -176,14 +195,18 @@ def build_overwrites(
 ) -> dict:
     """
     Baut die Kanal-Rechte:
-      - @everyone (und damit Unverified) sieht nichts
-      - Mitglieds-Rollen sehen "members"-Kanäle
       - nur Admin sieht "admin"-Kanäle
       - Regelkanal: für alle sichtbar, aber nur Reaktionen erlaubt
+      - Verifizierung AUS: @everyone sieht alle "members"-Kanäle und kann schreiben
+      - Verifizierung AN:  @everyone (und damit Unverified) sieht nichts,
+                           nur Mitglieds-Rollen sehen "members"-Kanäle
     """
     everyone = guild.default_role
     admin = roles[config.ROLE_ADMIN]
-    member_roles = [roles[s["name"]] for s in config.ROLES if s.get("member")]
+    if config.VERIFICATION_ENABLED:
+        member_roles = [roles[s["name"]] for s in active_role_specs() if s.get("member")]
+    else:
+        member_roles = [everyone]  # jeder auf dem Server zählt als Mitglied
 
     ow: dict = {
         everyone: discord.PermissionOverwrite(view_channel=False),
@@ -195,7 +218,7 @@ def build_overwrites(
         ow[everyone] = discord.PermissionOverwrite(
             view_channel=True, send_messages=False, add_reactions=True, read_message_history=True,
         )
-        if not config.RULES_VISIBLE_AFTER_VERIFY:
+        if config.VERIFICATION_ENABLED and not config.RULES_VISIBLE_AFTER_VERIFY:
             ow[roles[config.ROLE_MEMBER]] = discord.PermissionOverwrite(view_channel=False)
         # Admins sehen ihn immer und dürfen schreiben
         ow[admin] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
@@ -317,8 +340,8 @@ async def setup_rules_message(guild: discord.Guild):
         await message.edit(embed=embed)
         log.info("Regel-Nachricht aktualisiert.")
 
-    # ✅-Reaktion sicherstellen
-    if not any(str(r.emoji) == config.VERIFY_EMOJI and r.me for r in message.reactions):
+    # ✅-Reaktion sicherstellen (nur nötig, wenn verifiziert wird)
+    if config.VERIFICATION_ENABLED and not any(str(r.emoji) == config.VERIFY_EMOJI and r.me for r in message.reactions):
         await message.add_reaction(config.VERIFY_EMOJI)
 
     bot.rules_message_id = message.id
@@ -329,7 +352,26 @@ async def setup_rules_message(guild: discord.Guild):
 # --------------------------------------------------------------------------- #
 
 async def setup_existing_members(guild: discord.Guild, roles: dict[str, discord.Role]):
-    """Gibt allen Mitgliedern ohne Mitglied/Unverified die Rolle Unverified."""
+    """
+    Verifizierung AUS: Alle bekommen "Mitglied", "Unverified" wird entfernt.
+    Verifizierung AN:  Alle ohne Mitglied/Unverified bekommen "Unverified".
+    """
+    if not config.VERIFICATION_ENABLED:
+        member_role = roles[config.ROLE_MEMBER]
+        unverified = get_role(guild, config.ROLE_UNVERIFIED)  # evtl. von früher übrig
+        for member in guild.members:
+            if member.bot:
+                continue
+            try:
+                if member_role not in member.roles:
+                    await member.add_roles(member_role, reason="Mancave-Setup")
+                    log.info("Mitglied vergeben an: %s", member)
+                if unverified and unverified in member.roles:
+                    await member.remove_roles(unverified, reason="Verifizierung deaktiviert")
+            except discord.HTTPException as e:
+                log.warning("Konnte Rollen von %s nicht anpassen: %s", member, e)
+        return
+
     if not config.ASSIGN_UNVERIFIED_TO_EXISTING:
         return
     unverified = roles[config.ROLE_UNVERIFIED]
@@ -389,15 +431,26 @@ async def on_ready():
 async def on_member_join(member: discord.Member):
     if member.guild.id != GUILD_ID or member.bot:
         return
-    unverified = get_role(member.guild, config.ROLE_UNVERIFIED)
-    if unverified:
-        await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
     await send_log(member.guild, f"📥 {member.mention} ist dem Server beigetreten.")
+
+    if config.VERIFICATION_ENABLED:
+        unverified = get_role(member.guild, config.ROLE_UNVERIFIED)
+        if unverified:
+            await member.add_roles(unverified, reason="Neues Mitglied – noch nicht verifiziert")
+        return
+
+    # Ohne Verifizierung: direkt Mitglied + Begrüßung
+    member_role = get_role(member.guild, config.ROLE_MEMBER)
+    if member_role:
+        await member.add_roles(member_role, reason="Neues Mitglied")
+    await send_welcome(member)
 
 
 @bot.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     """Verifizierung: ✅ auf die Regel-Nachricht -> Mitglied."""
+    if not config.VERIFICATION_ENABLED:
+        return
     if payload.guild_id != GUILD_ID or payload.message_id != bot.rules_message_id:
         return
     if str(payload.emoji) != config.VERIFY_EMOJI:
@@ -425,13 +478,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
     await send_log(guild, f"✅ {member.mention} hat die Regeln akzeptiert.")
 
-    # Willkommensnachricht in #willkommen
-    welcome = get_text_channel(guild, config.WELCOME_CHANNEL)
-    if welcome:
-        values = SafeDict(mention=member.mention)
-        values.update({f"ch_{c.name.replace('-', '_')}": c.mention for c in guild.text_channels})
-        text = config.WELCOME_MESSAGE.format_map(values)
-        await welcome.send(text)
+    await send_welcome(member)
 
 
 # --------------------------------------------------------------------------- #

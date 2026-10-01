@@ -22,14 +22,23 @@ import discord
 
 SERVER_NAME = "Mancave"
 
+# Verifizierung per ✅-Reaktion?
+#   False -> Jeder, der joint, sieht SOFORT alle Kanäle und kann schreiben.
+#            Funktioniert auch, wenn der Bot gerade offline ist.
+#   True  -> Neue Leute bekommen "Unverified" und sehen nur den Regelkanal,
+#            bis sie mit ✅ zustimmen (Bot muss dafür dauerhaft laufen).
+VERIFICATION_ENABLED = False
+
 # Beim Start des Bots automatisch das komplette Setup ausführen?
 RUN_SETUP_ON_START = True
 
+# Nur bei VERIFICATION_ENABLED = True:
 # Bestehende Mitglieder ohne "Mitglied"/"Unverified" bekommen beim Setup
 # automatisch "Unverified" (sie müssen dann auch erst den Regeln zustimmen).
 # Der Server-Owner und Bots sind davon ausgenommen.
 ASSIGN_UNVERIFIED_TO_EXISTING = True
 
+# Nur bei VERIFICATION_ENABLED = True:
 # Soll #regeln-und-zustimmung nach der Verifizierung weiterhin sichtbar sein?
 #   True  -> alle sehen den Kanal (Mitglieder können die Regeln nachlesen)
 #   False -> nur Unverified (und Admins) sehen ihn
@@ -54,6 +63,7 @@ ROLE_UNVERIFIED = "Unverified"
 #   color       -> Farbe als Hex-Zahl
 #   hoist       -> separat in der Mitgliederliste anzeigen
 #   member      -> True = sieht alle normalen Kanäle (wie "Mitglied")
+#   verification_only -> Rolle wird nur bei VERIFICATION_ENABLED = True angelegt
 #   permissions -> Server-weite Rechte (Standard: keine Extra-Rechte)
 # --------------------------------------------------------------------------- #
 
@@ -85,7 +95,8 @@ ROLES = [
     {"name": "Niche", "color": 0x1ABC9C, "hoist": True, "member": True},         # Türkis
     {"name": "Gooner", "color": 0x3498DB, "hoist": True, "member": True},        # Blau
     {"name": ROLE_MEMBER, "color": 0x95A5A6, "hoist": False, "member": True},    # Grau
-    {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False},  # Dunkelgrau
+    {"name": ROLE_UNVERIFIED, "color": 0x546E7A, "hoist": False, "member": False,
+     "verification_only": True},  # Dunkelgrau
 ]
 
 # --------------------------------------------------------------------------- #
@@ -114,7 +125,8 @@ CATEGORIES = [
         "access": "members",
         "channels": [
             {"name": RULES_CHANNEL, "type": "text", "mode": "rules",
-             "topic": f"Lies die Regeln und reagiere mit {VERIFY_EMOJI}, um freigeschaltet zu werden."},
+             "topic": (f"Lies die Regeln und reagiere mit {VERIFY_EMOJI}, um freigeschaltet zu werden."
+                       if VERIFICATION_ENABLED else "Die Regeln der Mancave – bitte einmal durchlesen.")},
             {"name": WELCOME_CHANNEL, "type": "text", "mode": "readonly",
              "topic": "Willkommen in der Mancave!"},
             {"name": "vorstellung", "type": "text",
@@ -180,10 +192,13 @@ RULES_DESCRIPTION = (
     "**3.** [PLATZHALTER – Regel 3]\n"
     "**4.** [PLATZHALTER – Regel 4]\n"
     "**5.** [PLATZHALTER – Regel 5]\n\n"
-    "⚠️ *Nichts auf diesem Server ist Finanzberatung.*\n\n"
-    f"Reagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
-    "und alle Kanäle freizuschalten."
+    "⚠️ *Nichts auf diesem Server ist Finanzberatung.*"
 )
+if VERIFICATION_ENABLED:
+    RULES_DESCRIPTION += (
+        f"\n\nReagiere mit {VERIFY_EMOJI} auf diese Nachricht, um den Regeln zuzustimmen "
+        "und alle Kanäle freizuschalten."
+    )
 
 RULES_COLOR = 0xF7931A
 

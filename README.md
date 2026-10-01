@@ -12,10 +12,8 @@ Baut den kompletten **Mancave**-Server automatisch auf und übernimmt die Verifi
 
 - **Rollen** (von oben nach unten): Admin / Mod › König Krypto › Skalierer › Saftler › Niche › Gooner › Mitglied › Unverified
 - **Kategorien & Kanäle:** 📜 START, 💬 COMMUNITY, 💰 BUSINESS & MONEY, 🎙️ VOICE, 🔒 ADMIN
-- **Verifizierung:**
-  - Neues Mitglied → bekommt automatisch `Unverified` und sieht nur `#regeln-und-zustimmung`
-  - Reaktion mit ✅ auf die Regeln → `Unverified` wird entfernt, `Mitglied` wird vergeben → alle Kanäle sichtbar
-  - Willkommensnachricht in `#willkommen`, Log in `#bot-logs`
+- **Kein Bestätigen nötig (Standard):** Wer joint, sieht sofort alle Kanäle (außer 🔒 ADMIN) und kann schreiben. Das funktioniert auch, wenn der Bot gerade offline ist. Ist er online, gibt er neuen Leuten die Rolle `Mitglied` und begrüßt sie in `#willkommen`.
+- **Optional: Verifizierung per ✅** – in `config.py` `VERIFICATION_ENABLED = True` setzen. Dann bekommen neue Leute `Unverified`, sehen nur `#regeln-und-zustimmung` und werden erst nach ✅ freigeschaltet (Bot muss dafür dauerhaft laufen).
 - **Idempotent:** Beim erneuten Ausführen wird nichts doppelt angelegt, nur Abweichungen (Farben, Rechte, Themen, Regeltext) werden angepasst.
 - `/setup` (nur Admins): Setup jederzeit erneut ausführen, z. B. nachdem du `config.py` geändert hast.
 
